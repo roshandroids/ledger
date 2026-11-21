@@ -199,3 +199,28 @@ for (const scheme of ['light', 'dark'] as const)
       ).toEqual([])
     })
   }
+
+test('imports a bank CSV once and a re-import adds nothing; preview passes axe', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/transactions')
+  const csv = Buffer.from(
+    'Date,Description,Amount\n2026-03-05,Tim Hortons,-4.50\n2026-03-06,Pay,2000\n',
+  )
+  const file = { name: 'bank.csv', mimeType: 'text/csv', buffer: csv }
+  await page.getByLabel('CSV file').setInputFiles(file)
+  await expect(
+    page.getByText(/2 ready · 0 already in your ledger/),
+  ).toBeVisible()
+  const { violations } = await new AxeBuilder({ page }).analyze()
+  expect(
+    violations.filter((v) => v.impact === 'serious' || v.impact === 'critical'),
+  ).toEqual([])
+  await page.getByRole('button', { name: 'Import 2 transactions' }).click()
+  await expect(page.getByText('Showing 2 of 2')).toBeVisible()
+  await page.getByLabel('CSV file').setInputFiles(file)
+  await expect(
+    page.getByText(/0 ready · 2 already in your ledger/),
+  ).toBeVisible()
+})

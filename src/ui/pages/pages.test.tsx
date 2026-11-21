@@ -111,6 +111,41 @@ describe('Trends and rollover', () => {
   })
 })
 
+describe('CSV import', () => {
+  const csv =
+    'Date,Description,Amount\n2026-03-05,Tim Hortons,-4.50\n2026-03-06,Pay,2000\nbad,X,1\n'
+  const upload = () =>
+    userEvent.upload(
+      screen.getByLabelText('CSV file'),
+      new File([csv], 'bank.csv', { type: 'text/csv' }),
+    )
+
+  it('previews, imports valid rows once, and skips them on re-import', async () => {
+    at('/transactions')
+    await userEvent.type(
+      screen.getByLabelText('Category rules'),
+      'hortons = Coffee',
+    )
+    await upload()
+    expect(
+      await screen.findByText(
+        /2 ready · 0 already in your ledger · 1 with errors/,
+      ),
+    ).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Import 2 transactions' }),
+    )
+    expect(useLedger.getState().state.transactions).toMatchObject([
+      { date: '2026-03-05', type: 'Expense', amount: 4.5, category: 'Coffee' },
+      { date: '2026-03-06', type: 'Income', amount: 2000 },
+    ])
+    await upload()
+    expect(
+      await screen.findByText(/0 ready · 2 already in your ledger/),
+    ).toBeInTheDocument()
+  })
+})
+
 describe('Recurring bills', () => {
   it('adds a rule on Budget and focuses its first field', async () => {
     at('/budget')

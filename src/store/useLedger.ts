@@ -45,6 +45,8 @@ export interface LedgerStore {
     month: string,
     only?: { ruleId: string; date: string },
   ): number
+  /** Append already-validated transactions (CSV import). */
+  addTransactions(rows: Transaction[]): void
   startBlank(): void
   /** Replace everything (restore from backup). */
   replaceState(state: State): void
@@ -158,6 +160,11 @@ export function createLedgerStore(storage: Storage = createLocalStorage()) {
           ],
         })
         return todo.length
+      },
+      addTransactions(rows) {
+        const s = get().state
+        if (rows.length)
+          commit({ ...s, transactions: [...s.transactions, ...rows] })
       },
       replaceState(state) {
         commit(state)

@@ -201,6 +201,7 @@ Status: done, simplified: a category's budget (plus carried-over amount) is its 
 - Done when thresholds are covered by tests and axe stays clean in light and dark.
 
 ### 10.5 CSV and bank import (2-3 days)
+Status: done. Fixtures cover three layouts (headerless debit/credit with US dates; headed signed amounts with ISO dates and quoted commas; semicolons with day-first dates and decimal commas). Mapping and keyword rules are remembered in a separate localStorage key (`ledger-import-settings`), so they are not in the JSON backup. Imports go to transactions without an account until 10.6. Duplicate check is date + type + amount + description, counted. CSV export neutralizes formula cells.
 - Import CSV with column mapping (date, description, amount or debit/credit), date-format and sign options; the mapping is remembered.
 - Preview with per-row validation errors before committing; skip rows that already exist (date + amount + description) to avoid duplicates.
 - Rule-based auto-categorize by merchant keywords, editable by the user.
