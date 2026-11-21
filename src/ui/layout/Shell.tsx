@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useLedger } from '../../store/useLedger'
+import { DownloadButton } from '../DownloadButton'
 import { Notice } from '../components/Notice'
 import { pages } from '../pages/pages'
 import { Sidebar } from './Sidebar'
@@ -23,6 +24,7 @@ export function Shell() {
           title={page.title}
           month={month}
           onMonthChange={(m) => setSetting('month', m)}
+          actions={<DownloadButton />}
         />
         <div className="grid gap-5 p-6 md:p-9">
           {!canSave && (
