@@ -161,6 +161,7 @@ Estimated total for phases 0-9: about 12-17 working days for one developer.
 Gap analysis against a typical budget planner, plus unfinished items from phases 0-9. Each phase keeps the rules above: ends green (lint, typecheck, unit, e2e + axe), own commit or PR, no backend. Any change to the stored shape bumps `SCHEMA_VERSION` with a migration and a test that loads the previous version's blob.
 
 ### 10.0 Close out the open items (1 day)
+Status: restore from Drive is done; the rest needs the live site, Google Cloud console and a machine where LibreOffice runs.
 - Deploy on Netlify with the custom Porkbun subdomain; HTTPS on.
 - Lighthouse pass on the live URL (performance, a11y, best practices, SEO); fix anything under 90.
 - Test Drive saving against real Google (`VITE_GOOGLE_CLIENT_ID` in Netlify, site URL in authorized origins).

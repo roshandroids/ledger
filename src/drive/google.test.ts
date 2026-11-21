@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest'
-import { saveToDrive } from './google'
+import { loadLatestBackup, saveToDrive } from './google'
 
 const ok = (id: string) =>
   new Response(JSON.stringify({ id, webViewLink: `https://drive/${id}` }))
@@ -50,4 +50,17 @@ it('throws on a failed save', async () => {
   await expect(
     saveToDrive('t', 'excel', 'x', 'm', new Blob([]), f),
   ).rejects.toThrow('403')
+})
+
+it('loads the newest backup text, or null when none exists', async () => {
+  const f = vi
+    .fn()
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ files: [{ id: 'z' }] })),
+    )
+    .mockResolvedValueOnce(new Response('{"a":1}'))
+  expect(await loadLatestBackup('t', f)).toBe('{"a":1}')
+  expect(f.mock.calls[1][0]).toContain('/files/z?alt=media')
+  const none = vi.fn().mockResolvedValue(new Response('{"files":[]}'))
+  expect(await loadLatestBackup('t', none)).toBeNull()
 })

@@ -1,13 +1,20 @@
-import { Cloud } from 'lucide-react'
+import { Cloud, CloudDownload } from 'lucide-react'
 import { useState } from 'react'
 import {
   clientId,
   getAccessToken,
+  loadLatestBackup,
   saveToDrive,
   type DriveKind,
 } from '../../drive/google'
-import { backupFileName, serializeBackup } from '../../storage/backup'
+import type { State } from '../../domain'
+import {
+  backupFileName,
+  parseBackup,
+  serializeBackup,
+} from '../../storage/backup'
 import { useLedger } from '../../store/useLedger'
+import { ConfirmDialog } from './ConfirmDialog'
 import { Panel } from './Panel'
 
 const btn =
@@ -17,6 +24,31 @@ export function DrivePanel() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [link, setLink] = useState<string>()
+  const [pending, setPending] = useState<State | null>(null)
+
+  async function restore() {
+    if (!clientId) return
+    setBusy(true)
+    setLink(undefined)
+    setMsg('Looking for a backup in Google Drive…')
+    try {
+      const text = await loadLatestBackup(await getAccessToken(clientId))
+      const state = text === null ? null : parseBackup(text)
+      if (state) {
+        setPending(state)
+        setMsg('')
+      } else
+        setMsg(
+          text === null
+            ? 'No Ledger backup found in your Drive.'
+            : 'The newest Drive file is not a Ledger backup.',
+        )
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Could not read Google Drive.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function save(kind: DriveKind) {
     if (!clientId) return
@@ -68,6 +100,9 @@ export function DrivePanel() {
           >
             <Cloud size={16} aria-hidden="true" /> Save backup to Drive
           </button>
+          <button className={btn} disabled={busy} onClick={restore}>
+            <CloudDownload size={16} aria-hidden="true" /> Restore from Drive
+          </button>
         </div>
       ) : (
         <p className="text-muted text-sm">
@@ -88,6 +123,21 @@ export function DrivePanel() {
           </a>
         )}
       </p>
+      {pending && (
+        <ConfirmDialog
+          open
+          title="Replace your budget?"
+          confirmLabel="Replace"
+          onConfirm={() => {
+            useLedger.getState().replaceState(pending)
+            setMsg('Backup restored from Google Drive.')
+          }}
+          onClose={() => setPending(null)}
+        >
+          Restoring replaces everything currently in this browser. Save a backup
+          first if you want to keep it.
+        </ConfirmDialog>
+      )}
     </Panel>
   )
 }

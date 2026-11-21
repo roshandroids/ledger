@@ -147,3 +147,30 @@ export async function saveToDrive(
   rememberId(kind, file.id)
   return file
 }
+
+/** Text of the newest Ledger backup this app created in Drive, or null if there is none. */
+export async function loadLatestBackup(
+  token: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<string | null> {
+  const auth = { headers: { Authorization: `Bearer ${token}` } }
+  const q = encodeURIComponent(
+    "name contains 'ledger-backup' and mimeType='application/json' and trashed=false",
+  )
+  const list = await fetchFn(
+    `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime%20desc&pageSize=1&fields=files(id)`,
+    auth,
+  )
+  if (!list.ok)
+    throw new Error(`Google Drive could not list backups (${list.status}).`)
+  const id = ((await list.json()) as { files?: { id: string }[] }).files?.[0]
+    ?.id
+  if (!id) return null
+  const file = await fetchFn(
+    `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
+    auth,
+  )
+  if (!file.ok)
+    throw new Error(`Google Drive could not read the backup (${file.status}).`)
+  return file.text()
+}

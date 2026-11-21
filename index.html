@@ -2,11 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/brand/ledger-favicon.png" />
+    <link rel="apple-touch-icon" href="/brand/ledger-launcher-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Plan your monthly budget in CAD, track savings and export to Excel. Your data stays in your browser." />
     <meta property="og:title" content="Ledger — Personal Budget" />
     <meta property="og:description" content="Monthly budget planner with savings goals, Excel export and optional Google Drive saving." />
+    <meta property="og:image" content="https://ledger.rsprojects.dev/brand/ledger-banner.webp" />
+    <meta property="og:image:width" content="1600" />
+    <meta property="og:image:height" content="800" />
+    <meta property="og:image:alt" content="Ledger monthly budget planner with an illustrated budget notebook" />
     <meta name="theme-color" content="#121d32" />
     <script>
       try {
@@ -14,10 +20,36 @@
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
       } catch (e) {}
     </script>
+    <style>
+      .startup {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 1rem;
+        background: #121d32;
+        color: white;
+        font: 1rem system-ui, sans-serif;
+      }
+      .startup img {
+        width: min(16rem, 70vw);
+        height: auto;
+      }
+    </style>
     <title>Ledger — Personal Budget</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="startup" role="status">
+        <img src="/brand/ledger-logo.png" alt="" width="768" height="278" />
+        <span>Loading Ledger…</span>
+      </div>
+    </div>
+    <noscript>
+      <style>#root { display: none; }</style>
+      Enable JavaScript to open Ledger.
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

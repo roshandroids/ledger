@@ -8,17 +8,10 @@ export function Sidebar() {
     <aside className="bg-nav fixed inset-x-0 bottom-0 z-20 border-t border-white/10 text-white md:sticky md:top-0 md:flex md:h-screen md:flex-col md:border-t-0 md:px-5 md:pt-9 md:pb-6">
       <NavLink
         to="/overview"
-        className="hidden items-center px-2 text-2xl font-bold tracking-tight md:flex"
+        aria-label="Ledger overview"
+        className="hidden self-start md:block"
       >
-        <span
-          aria-hidden="true"
-          className="bg-mint mr-3 flex h-8 w-8 items-end gap-0.5 rounded-lg p-2"
-        >
-          <i className="bg-nav h-1.5 w-1 rounded-sm" />
-          <i className="bg-nav h-2.5 w-1 rounded-sm" />
-          <i className="bg-nav h-4 w-1 rounded-sm" />
-        </span>
-        Ledger<span className="text-mint">.</span>
+        <img src="/brand/ledger-logo.png" alt="" className="h-auto w-40" />
       </NavLink>
       <nav
         aria-label="Budget workspace"

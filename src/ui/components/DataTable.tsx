@@ -8,13 +8,20 @@ interface Props {
   headers: string[]
   rows: { key: string | number; cells: ReactNode[] }[]
   empty: string
+  emptyIllustration?: string
 }
 
 /** A real table from md up; stacked label/value cards on phones. */
-export function DataTable({ caption, headers, rows, empty }: Props) {
+export function DataTable({
+  caption,
+  headers,
+  rows,
+  empty,
+  emptyIllustration,
+}: Props) {
   const reduced = useReducedMotion()
   if (rows.length === 0) {
-    return <EmptyState>{empty}</EmptyState>
+    return <EmptyState illustration={emptyIllustration}>{empty}</EmptyState>
   }
   return (
     <div className="md:overflow-x-auto">

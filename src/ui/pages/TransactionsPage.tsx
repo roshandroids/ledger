@@ -41,6 +41,7 @@ export function TransactionsPage() {
       <div ref={tableRef}>
         <DataTable
           caption="Transactions"
+          emptyIllustration="/brand/transactions.webp"
           headers={[
             'Date',
             'Type',
