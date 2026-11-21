@@ -18,7 +18,9 @@ export function RecurringPanel() {
     () => addRow('recurring'),
     (i) => removeRow('recurring', i),
   )
-  const categories = state.budget.map((b) => b.category)
+  const categories = [...state.budget, ...state.recurring].map(
+    (b) => b.category,
+  )
   const goals: [string, string][] = state.goals.map((g) => [
     g.id === 'general' ? '' : g.id,
     g.name || 'Unnamed goal',
@@ -44,6 +46,7 @@ export function RecurringPanel() {
             'Frequency',
             'Starts',
             'Goal',
+            'Monthly plan',
             '',
           ]}
           empty="No recurring rules. Add rent, a subscription or your pay."
@@ -97,6 +100,22 @@ export function RecurringPanel() {
                   options={goals}
                   onChange={(goal) => updateRow('recurring', i, { goal })}
                 />
+              ) : (
+                '—'
+              ),
+              r.type !== 'Income' ? (
+                <label className="inline-flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={r.includeInPlan ?? false}
+                    onChange={(event) =>
+                      updateRow('recurring', i, {
+                        includeInPlan: event.target.checked,
+                      })
+                    }
+                  />
+                  Include
+                </label>
               ) : (
                 '—'
               ),

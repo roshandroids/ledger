@@ -1,22 +1,48 @@
-import { useMemo } from 'react'
-import { limitStatus, report, rolloverCarry } from '../../domain'
+import { useMemo, useState } from 'react'
+import {
+  limitStatus,
+  monthSeries,
+  report,
+  rolloverCarry,
+  unspentToSave,
+} from '../../domain'
 import { useLedger } from '../../store/useLedger'
-import { ringRows } from '../chartData'
+import { monthLabel, ringRows } from '../chartData'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { CashFlowChart } from '../components/CashFlowChart'
+import { TrendChart } from '../components/TrendChart'
 import { SpendingDonut } from '../components/SpendingDonut'
 import { CategoryIcon } from '../components/CategoryIcon'
 import { LimitBar } from '../components/LimitBar'
 import { BillsPanel } from '../components/BillsPanel'
 import { useBills } from '../useBills'
 import { Notice } from '../components/Notice'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { DataTable } from '../components/DataTable'
 import { Panel } from '../components/Panel'
 import { fmt, pct } from '../format'
 
 export function OverviewPage() {
   const state = useLedger((s) => s.state)
+  const [saving, setSaving] = useState<{
+    month: string
+    amount: number
+  } | null>(null)
+  const [saveMessage, setSaveMessage] = useState<{
+    month: string
+    text: string
+  } | null>(null)
   const r = useMemo(() => report(state), [state])
+  const trend = useMemo(
+    () =>
+      monthSeries(state, state.month, 6).map(({ month, income, spend }) => ({
+        name: monthLabel(month),
+        Income: income,
+        Spending: spend,
+      })),
+    [state],
+  )
+  const unspent = unspentToSave(state, r)
   const carry = useMemo(
     () => (state.rollover ? rolloverCarry(state) : null),
     [state],
@@ -50,7 +76,7 @@ export function OverviewPage() {
     r.target > 0 ? Math.max(0, Math.min((r.general / r.target) * 100, 100)) : 0
   return (
     <>
-      <section className="bg-nav grid gap-6 rounded-xl p-6 text-white md:grid-cols-2">
+      <section className="bg-nav grid gap-5 rounded-xl p-5 text-white sm:p-6 lg:grid-cols-2">
         <div>
           <div className="text-xs font-bold tracking-widest text-slate-300">
             MONTHLY CASH AFTER SAVINGS TARGET
@@ -58,7 +84,7 @@ export function OverviewPage() {
           <div
             data-testid="remaining"
             className={
-              'mt-2 text-5xl font-bold ' +
+              'mt-2 wrap-anywhere text-4xl font-bold sm:text-5xl ' +
               ((r.afterTarget ?? 0) < 0 ? 'text-red-300' : 'text-mint')
             }
           >
@@ -72,12 +98,12 @@ export function OverviewPage() {
           </p>
         </div>
         <div>
-          <div className="flex justify-between text-sm">
+          <div className="flex flex-wrap justify-between gap-2 text-sm">
             <span>General savings</span>
             <strong>{fmt(r.target)} target</strong>
           </div>
           <progress
-            className="my-2 w-full"
+            className="savings-progress my-2 h-2 w-full"
             max={100}
             value={progress}
             aria-label="Monthly savings target progress"
@@ -89,6 +115,48 @@ export function OverviewPage() {
           </p>
         </div>
       </section>
+      {unspent > 0 && (
+        <Notice
+          action={
+            <button
+              type="button"
+              onClick={() => setSaving({ month: state.month, amount: unspent })}
+              className="border-line rounded-lg border px-3 py-2 text-sm font-semibold"
+            >
+              Record as savings
+            </button>
+          }
+        >
+          {fmt(unspent)} of unspent budget is available to save.
+        </Notice>
+      )}
+      {saveMessage?.month === state.month && (
+        <Notice>{saveMessage.text}</Notice>
+      )}
+      {saving && (
+        <ConfirmDialog
+          open
+          title="Record unspent budget as savings"
+          confirmLabel="Record savings"
+          onClose={() => setSaving(null)}
+          onConfirm={() => {
+            const recorded = useLedger
+              .getState()
+              .saveUnspentBudget(saving.month, saving.amount)
+            setSaveMessage({
+              month: saving.month,
+              text: recorded
+                ? 'Recorded in General savings.'
+                : 'The available amount changed. Review the month and try again.',
+            })
+          }}
+        >
+          Record {fmt(saving.amount)} in General savings for {saving.month}.
+          This records a Ledger entry only.
+          {state.rollover &&
+            ' This amount will be deducted from the budget carried forward.'}
+        </ConfirmDialog>
+      )}
       {attention.length > 0 && (
         <Notice>
           {attention
@@ -111,19 +179,21 @@ export function OverviewPage() {
           .
         </Notice>
       )}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {stats.map(([label, value, detail]) => (
           <div
             key={label}
-            className="border-line grid gap-1 rounded-xl border bg-card p-4"
+            className="border-line grid min-w-0 content-start gap-1 rounded-xl border bg-card p-3 sm:p-4"
           >
             <span className="text-muted text-sm">{label}</span>
-            <strong className="text-2xl">{value}</strong>
+            <strong className="wrap-anywhere text-xl sm:text-2xl">
+              {value}
+            </strong>
             <small className="text-muted">{detail}</small>
           </div>
         ))}
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <Panel
           title="Monthly cash flow"
           subtitle="Planned vs. actual for the selected month"
@@ -148,6 +218,46 @@ export function OverviewPage() {
           <SpendingDonut rows={ringRows(r.breakdown)} total={r.planSpend} />
         </Panel>
       </div>
+      <Panel
+        title="Income and spending trend"
+        subtitle="Actuals for the six months ending in the selected month"
+      >
+        {trend.some((row) => row.Income !== null || row.Spending !== null) ? (
+          <>
+            <TrendChart
+              data={trend}
+              variant="line"
+              series={[
+                { key: 'Income', color: 'var(--actual)' },
+                { key: 'Spending', color: 'var(--negative)' },
+              ]}
+            />
+            <table className="sr-only">
+              <caption>Actual income and spending by month</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col">Income</th>
+                  <th scope="col">Spending</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trend.map((row) => (
+                  <tr key={row.name}>
+                    <th scope="row">{row.name}</th>
+                    <td>{fmt(row.Income)}</td>
+                    <td>{fmt(row.Spending)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <p className="text-muted text-sm">
+            Record transactions to see your income and spending over time.
+          </p>
+        )}
+      </Panel>
       {bills && <BillsPanel bills={bills} />}
       <Panel
         title="Category breakdown"

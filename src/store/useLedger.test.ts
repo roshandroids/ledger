@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { starter, type State } from '../domain'
+import {
+  parseState,
+  report,
+  rolloverCarry,
+  starter,
+  unspentToSave,
+  type State,
+} from '../domain'
 import type { Storage } from '../storage/Storage'
 import { createLedgerStore } from './useLedger'
 
@@ -27,6 +34,57 @@ describe('ledger store', () => {
     const s = store.getState().state
     expect(s.transactions[0].date).toBe('2026-05-01')
     expect(s.budget[0].due).toBe('2026-05')
+  })
+
+  it('records completed-month budget leftover once, capped by cash and deducted from carry', () => {
+    const state = {
+      ...starter(false),
+      month: '2020-02',
+      rollover: true,
+      budget: [
+        {
+          name: 'Food',
+          category: 'Groceries',
+          type: 'Expense',
+          cadence: 'Monthly',
+          amount: 100,
+          due: '',
+        },
+      ] satisfies State['budget'],
+      transactions: [
+        {
+          date: '2020-02-01',
+          type: 'Income',
+          category: '',
+          amount: 60,
+          goal: '',
+          notes: '',
+        },
+        {
+          date: '2020-02-27',
+          type: 'Expense',
+          category: 'Groceries',
+          amount: 20,
+          goal: '',
+          notes: '',
+        },
+      ] satisfies State['transactions'],
+    }
+    const { store, saved } = memory(state)
+    expect(unspentToSave(state)).toBe(40)
+    expect(store.getState().saveUnspentBudget(state.month, 80)).toBe(false)
+    expect(store.getState().saveUnspentBudget(state.month, 40)).toBe(true)
+    expect(store.getState().saveUnspentBudget(state.month, 40)).toBe(false)
+    const persisted = parseState(saved.at(-1))!
+    expect(persisted.transactions.at(-1)).toMatchObject({
+      date: '2020-02-29',
+      amount: 40,
+    })
+    expect(report(persisted)).toMatchObject({ general: 40, actualCash: 0 })
+    expect(unspentToSave(persisted)).toBe(0)
+    expect(
+      rolloverCarry({ ...persisted, month: '2020-03' }).get('groceries'),
+    ).toBe(40)
   })
 
   it('updates and removes rows', () => {

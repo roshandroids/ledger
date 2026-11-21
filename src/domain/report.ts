@@ -63,7 +63,13 @@ export function report(state: State): Report {
   const activeGym =
     gymOptions.find((item) => item.id === state.gym) ?? gymOptions[0]
   const gym = gymMonthly(activeGym)
-  const budget = state.budget.map((item) => ({
+  const recurringBudget = (state.recurring ?? []).flatMap(
+    ({ includeInPlan, type, name, category, cadence, amount }) =>
+      includeInPlan && type !== 'Income'
+        ? [{ type, name, category, cadence, amount, due: '' }]
+        : [],
+  )
+  const budget = [...state.budget, ...recurringBudget].map((item) => ({
     ...item,
     monthly: monthly(item.amount, item.cadence, item.due, state.month),
   }))

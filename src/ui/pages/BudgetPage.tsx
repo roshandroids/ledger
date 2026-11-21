@@ -1,14 +1,12 @@
-import { useMemo } from 'react'
-import { currencies, frequencies, report } from '../../domain'
+import { useState } from 'react'
+import { currencies, frequencies, monthly } from '../../domain'
 import type { Cadence } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
-import { DrivePanel } from '../components/DrivePanel'
-import { LockPanel } from '../components/LockPanel'
 import { RecurringPanel } from '../components/RecurringPanel'
-import { BackupPanel } from '../components/BackupPanel'
 import { CategoryInput } from '../components/CategoryInput'
 import { MonthPicker } from '../components/MonthPicker'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { DataTable } from '../components/DataTable'
 import { MoneyInput } from '../components/MoneyInput'
 import { Panel } from '../components/Panel'
@@ -21,9 +19,15 @@ const cadences = Object.keys(frequencies) as Cadence[]
 
 export function BudgetPage() {
   const state = useLedger((s) => s.state)
-  const { setSetting, addRow, updateRow, removeRow } = useLedger.getState()
-  const categories = state.budget.map((b) => b.category)
-  const rows = useMemo(() => report(state).budget, [state])
+  const { setSetting, addRow, updateRow, removeRow, moveBudgetToRecurring } =
+    useLedger.getState()
+  const categories = [...state.budget, ...state.recurring].map(
+    (b) => b.category,
+  )
+  const [moving, setMoving] = useState<{ index: number; start: string } | null>(
+    null,
+  )
+  const [moveMessage, setMoveMessage] = useState('')
   const rowFocus = useRowFocus(
     () => addRow('budget'),
     (i) => removeRow('budget', i),
@@ -106,7 +110,7 @@ export function BudgetPage() {
               '',
             ]}
             empty="Your budget is empty. Add a recurring bill, one-time cost or savings transfer."
-            rows={rows.map((r, i) => ({
+            rows={state.budget.map((r, i) => ({
               key: i,
               cells: [
                 <TextInput
@@ -150,20 +154,65 @@ export function BudgetPage() {
                 ) : (
                   '—'
                 ),
-                fmt(r.monthly),
-                <RemoveButton
-                  label="budget item"
-                  onClick={() => onRemove(i)}
-                />,
+                fmt(monthly(r.amount, r.cadence, r.due, state.month)),
+                <div className="flex items-center gap-2">
+                  {r.cadence !== 'One-time' && r.amount !== '' && (
+                    <button
+                      type="button"
+                      aria-label={`Make recurring: ${r.name || 'budget item'}`}
+                      className="border-line rounded-lg border px-2 py-1 text-xs font-semibold"
+                      onClick={() => {
+                        setMoveMessage('')
+                        setMoving({ index: i, start: state.month + '-01' })
+                      }}
+                    >
+                      Make recurring
+                    </button>
+                  )}
+                  <RemoveButton
+                    label="budget item"
+                    onClick={() => onRemove(i)}
+                  />
+                </div>,
               ],
             }))}
           />
         </div>
       </Panel>
+      {moveMessage && (
+        <p role="status" className="text-muted text-sm">
+          {moveMessage}
+        </p>
+      )}
+      {moving && (
+        <ConfirmDialog
+          open
+          title="Move to recurring bills"
+          confirmLabel="Move item"
+          confirmDisabled={!moving.start}
+          onClose={() => setMoving(null)}
+          onConfirm={() => {
+            setMoveMessage(
+              moveBudgetToRecurring(moving.index, moving.start)
+                ? 'Item moved to Recurring bills and income. It still counts in your monthly plan.'
+                : 'The item could not be moved. Check the amount and first bill date.',
+            )
+          }}
+        >
+          <label className="grid gap-1">
+            First bill date
+            <input
+              type="date"
+              className="border-line bg-card rounded-lg border px-3 py-2"
+              value={moving.start}
+              onChange={(event) =>
+                setMoving({ ...moving, start: event.target.value })
+              }
+            />
+          </label>
+        </ConfirmDialog>
+      )}
       <RecurringPanel />
-      <BackupPanel />
-      <DrivePanel />
-      <LockPanel />
     </>
   )
 }

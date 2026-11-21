@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 import {
+  currencyOf,
   dueInMonth,
+  rateFor,
+  unspentToSave,
+  occurrences,
   starter,
   transactionFor,
   type BudgetItem,
@@ -39,6 +43,10 @@ export interface LedgerStore {
   canSave: boolean
   setSetting<K extends SettingKey>(key: K, value: State[K]): void
   addRow(group: Group): void
+  /** Record a completed month’s available budget leftover as General savings. */
+  saveUnspentBudget(month: string, amount: number): boolean
+  /** Move a repeating item to the bill schedule while keeping its monthly plan. */
+  moveBudgetToRecurring(index: number, start: string): boolean
   updateRow<G extends Group>(
     group: G,
     index: number,
@@ -128,9 +136,60 @@ export function createLedgerStore(storage: Storage = createLocalStorage()) {
       setSetting(key, value) {
         commit({ ...get().state, [key]: value })
       },
+      saveUnspentBudget(month, amount) {
+        const s = get().state
+        if (month !== s.month || amount <= 0 || unspentToSave(s) !== amount)
+          return false
+        const lastDay = new Date(
+          Number(month.slice(0, 4)),
+          Number(month.slice(5)),
+          0,
+        ).getDate()
+        const transaction: Transaction = {
+          date: `${month}-${lastDay}`,
+          type: 'Savings transfer',
+          category: 'Savings',
+          amount: amount / rateFor(s, currencyOf(s)),
+          goal: 'general',
+          notes: 'Unspent monthly budget',
+          budgetSavingsMonth: month,
+        }
+        commit({ ...s, transactions: [...s.transactions, transaction] })
+        return true
+      },
       addRow(group) {
         const s = get().state
         commit({ ...s, [group]: [...s[group], newRow(group, s.month)] })
+      },
+      moveBudgetToRecurring(index, start) {
+        const s = get().state
+        const item = s.budget[index]
+        if (
+          !item ||
+          item.cadence === 'One-time' ||
+          item.amount === '' ||
+          !Number.isFinite(Number(item.amount))
+        )
+          return false
+        const { name, category, type, amount, cadence } = item
+        const rule: Recurring = {
+          id: crypto.randomUUID(),
+          name,
+          category,
+          type,
+          amount,
+          cadence,
+          start,
+          goal: '',
+          includeInPlan: true,
+        }
+        if (!occurrences(rule, start.slice(0, 7)).includes(start)) return false
+        commit({
+          ...s,
+          budget: s.budget.filter((_, i) => i !== index),
+          recurring: [...s.recurring, rule],
+        })
+        return true
       },
       updateRow(group, index, patch) {
         const s = get().state

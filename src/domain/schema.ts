@@ -27,6 +27,11 @@ const transaction = z.object({
   goal: text,
   notes: text,
   ruleId: z.string().optional().catch(undefined),
+  budgetSavingsMonth: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional()
+    .catch(undefined),
   account: z.string().optional().catch(undefined),
   tags: z.array(z.string()).optional().catch(undefined),
   splits: z
@@ -74,6 +79,7 @@ const recurring = z.object({
   amount: money.catch(''),
   start: text,
   goal: text,
+  includeInPlan: z.boolean().optional().catch(undefined),
 })
 
 const goal = z.object({

@@ -39,6 +39,8 @@ export interface Transaction {
   notes: string
   /** Set when generated from a recurring rule; makes generation idempotent. */
   ruleId?: string
+  /** Budget month whose leftover was recorded as savings. */
+  budgetSavingsMonth?: string
   /** Account id; empty or unknown means the first account. */
   account?: string
   /** Free-form labels, matched case-insensitively. */
@@ -90,6 +92,8 @@ export interface Recurring {
   start: string
   /** Goal id for Savings transfer; empty means the general goal. */
   goal: string
+  /** Include this rule’s monthly average in the budget plan. */
+  includeInPlan?: boolean
 }
 
 export interface Goal {

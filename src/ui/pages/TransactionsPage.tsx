@@ -67,7 +67,7 @@ export function TransactionsPage() {
     return [...seen.values()].sort((a, b) => a.localeCompare(b, 'en-CA'))
   }, [state.transactions])
   const categorySuggestions = [
-    ...state.budget.map((b) => b.category),
+    ...[...state.budget, ...state.recurring].map((b) => b.category),
     ...categories,
   ]
   // A new blank row would be hidden by an active filter or sort, so show everything first.
