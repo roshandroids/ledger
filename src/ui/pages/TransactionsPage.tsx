@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { goalTypes, transactionTypes } from '../../domain'
+import { accountOf, goalTypes, transactionTypes } from '../../domain'
 import type { TransactionType } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
@@ -45,8 +45,11 @@ export function TransactionsPage() {
   const [selected, setSelected] = useState<number[]>([])
   const [bulkCategory, setBulkCategory] = useState('')
   const view = useMemo(
-    () => filterTransactions(state.transactions, filter),
-    [state.transactions, filter],
+    () =>
+      filterTransactions(state.transactions, filter, (t) =>
+        accountOf(state, t),
+      ),
+    [state.transactions, state.accounts, filter],
   )
   const categories = useMemo(() => {
     const seen = new Map<string, string>()
@@ -120,6 +123,20 @@ export function TransactionsPage() {
               ]}
               onChange={(category) => setFilter({ category })}
             />
+            {state.accounts.length > 0 && (
+              <Select
+                label="Filter by account"
+                value={filter.account}
+                options={[
+                  ['', 'All accounts'],
+                  ...state.accounts.map((a): [string, string] => [
+                    a.id,
+                    a.name || 'Unnamed account',
+                  ]),
+                ]}
+                onChange={(account) => setFilter({ account })}
+              />
+            )}
             <Select
               label="Sort by"
               value={filter.sort}

@@ -9,6 +9,8 @@ export interface TxFilter {
   type: '' | TransactionType
   /** '' = all, NONE = uncategorized, otherwise a category name. */
   category: string
+  /** '' = all, otherwise an account id (unassigned rows count as the default account). */
+  account: string
   from: string
   to: string
   min: string
@@ -20,6 +22,7 @@ export const emptyFilter: TxFilter = {
   q: '',
   type: '',
   category: '',
+  account: '',
   from: '',
   to: '',
   min: '',
@@ -55,7 +58,11 @@ export interface TxView {
   index: number
 }
 
-export function filterTransactions(txs: Transaction[], f: TxFilter): TxView[] {
+export function filterTransactions(
+  txs: Transaction[],
+  f: TxFilter,
+  accountOf: (t: Transaction) => string | null = (t) => t.account ?? null,
+): TxView[] {
   const q = lower(f.q)
   const min = num(f.min)
   const max = num(f.max)
@@ -68,6 +75,7 @@ export function filterTransactions(txs: Transaction[], f: TxFilter): TxView[] {
         if (f.category === NONE ? c !== '' : c !== lower(f.category))
           return false
       }
+      if (f.account && accountOf(tx) !== f.account) return false
       if (f.from && !(tx.date >= f.from)) return false
       if (f.to && !(tx.date <= f.to)) return false
       const amount = num(tx.amount)

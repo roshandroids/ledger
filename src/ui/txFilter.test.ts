@@ -56,3 +56,16 @@ it('round-trips through URL params and reports when filtered', () => {
   expect(isFiltered(f)).toBe(true)
   expect(isFiltered({ ...emptyFilter, sort: 'category' })).toBe(false)
 })
+
+it('filters by account, resolving unassigned rows through the resolver', () => {
+  const rows = [t({ account: 'b' }), t({}), t({ account: 'a' })]
+  const run2 = (account: string) =>
+    filterTransactions(
+      rows,
+      { ...emptyFilter, account },
+      (x) => x.account || 'a',
+    ).map((r) => r.index)
+  expect(run2('a')).toEqual([1, 2])
+  expect(run2('b')).toEqual([0])
+  expect(isFiltered({ ...emptyFilter, account: 'a' })).toBe(true)
+})

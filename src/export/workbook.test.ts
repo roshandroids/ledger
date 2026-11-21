@@ -212,4 +212,60 @@ describe.skipIf(!soffice)('LibreOffice recalculation (local only)', () => {
       )
     }
   }, 120000)
+
+  it('adds Accounts, Transfers and Recurring sheets only when there is data', () => {
+    const s = sample()
+    expect(buildWorkbook(s).worksheets.map((w) => w.name)).not.toContain(
+      'Accounts',
+    )
+    s.accounts = [
+      {
+        id: 'a',
+        name: 'Main',
+        kind: 'Chequing',
+        opening: 1000,
+        rate: '',
+        payment: '',
+      },
+      {
+        id: 'c',
+        name: 'Visa',
+        kind: 'Credit card',
+        opening: 600,
+        rate: 19.99,
+        payment: 100,
+      },
+    ]
+    s.transfers = [
+      {
+        id: 't',
+        date: '2026-03-03',
+        from: 'a',
+        to: 'c',
+        amount: 100,
+        notes: 'pay',
+      },
+    ]
+    s.recurring = [
+      {
+        id: 'r',
+        name: 'Rent',
+        category: 'Housing',
+        type: 'Expense',
+        cadence: 'Monthly',
+        amount: 900,
+        start: '2026-01-01',
+        goal: '',
+      },
+    ]
+    const book = buildWorkbook(s)
+    expect(book.worksheets.map((w) => w.name)).toEqual(
+      expect.arrayContaining(['Accounts', 'Transfers', 'Recurring']),
+    )
+    const a = book.getWorksheet('Accounts')!
+    expect(a.getCell('A3').value).toBe('Visa')
+    expect(a.getCell('E3').value).toBe(19.99)
+    expect(book.getWorksheet('Transfers')!.getCell('B2').value).toBe('Main')
+    expect(book.getWorksheet('Recurring')!.getCell('A2').value).toBe('Rent')
+  })
 })

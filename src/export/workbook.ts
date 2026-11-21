@@ -1,5 +1,11 @@
 import ExcelJS from 'exceljs'
-import { cashFormat, frequencies, report } from '../domain'
+import {
+  accountBalances,
+  cashFormat,
+  frequencies,
+  isDebt,
+  report,
+} from '../domain'
 import type { State } from '../domain'
 
 /** Set from the ledger currency at the start of each build (builds are synchronous). */
@@ -391,6 +397,58 @@ export function buildWorkbook(state: State): ExcelJS.Workbook {
     }),
   ]
 
+  // Static values (no formulas): these sheets are for reading and filtering.
+  const accountName = new Map(state.accounts.map((a) => [a.id, a.name]))
+  const balances = accountBalances(state, state.month)
+  const accounts: Item[][] = [
+    [
+      'Account',
+      'Kind',
+      'Opening',
+      `Balance end of ${state.month}`,
+      'APR %',
+      'Monthly payment',
+    ],
+    ...balances.map(({ account: a, signed }): Item[] => [
+      a.name,
+      a.kind,
+      cash(a.opening),
+      cash(signed),
+      isDebt(a) ? plain(num(a.rate)) : null,
+      isDebt(a) ? cash(a.payment) : null,
+    ]),
+  ]
+  const transfers: Item[][] = [
+    ['Date', 'From', 'To', 'Amount', 'Notes'],
+    ...state.transfers.map((x): Item[] => [
+      x.date,
+      accountName.get(x.from) ?? '',
+      accountName.get(x.to) ?? '',
+      cash(x.amount),
+      x.notes,
+    ]),
+  ]
+  const recurring: Item[][] = [
+    [
+      'Name',
+      'Type',
+      'Category',
+      'Frequency',
+      'Amount',
+      'Start',
+      'Savings goal',
+    ],
+    ...state.recurring.map((r): Item[] => [
+      r.name,
+      r.type,
+      r.category,
+      r.cadence,
+      cash(r.amount),
+      r.start,
+      goalName.get(r.goal) || '',
+    ]),
+  ]
+
   const wb = new ExcelJS.Workbook()
   wb.calcProperties.fullCalcOnLoad = true
   addSheet(wb, { name: 'Overview', widths: [38, 22, 22, 20], data: overview })
@@ -410,6 +468,24 @@ export function buildWorkbook(state: State): ExcelJS.Workbook {
     widths: [28, 17, 17, 17, 17, 16, 39],
     data: goals,
   })
+  if (state.accounts.length) {
+    addSheet(wb, {
+      name: 'Accounts',
+      widths: [28, 16, 17, 26, 12, 18],
+      data: accounts,
+    })
+    addSheet(wb, {
+      name: 'Transfers',
+      widths: [16, 24, 24, 17, 38],
+      data: transfers,
+    })
+  }
+  if (state.recurring.length)
+    addSheet(wb, {
+      name: 'Recurring',
+      widths: [28, 20, 22, 16, 17, 16, 24],
+      data: recurring,
+    })
   return wb
 }
 
