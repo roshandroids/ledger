@@ -486,6 +486,7 @@ export function buildWorkbook(input: State): ExcelJS.Workbook {
       'Amount',
       'Start',
       'Savings goal',
+      'In monthly plan',
     ],
     ...state.recurring.map((r): Item[] => [
       r.name,
@@ -495,6 +496,7 @@ export function buildWorkbook(input: State): ExcelJS.Workbook {
       cash(r.amount),
       r.start,
       goalName.get(r.goal) || '',
+      r.type !== 'Income' && r.includeInPlan ? 'Yes' : '',
     ]),
   ]
 
@@ -547,8 +549,8 @@ export function buildWorkbook(input: State): ExcelJS.Workbook {
   if (state.recurring.length)
     addSheet(wb, {
       name: 'Recurring',
-      detailColumns: 7,
-      widths: [28, 20, 22, 16, 17, 16, 24],
+      detailColumns: 8,
+      widths: [28, 20, 22, 16, 17, 16, 24, 20],
       data: recurring,
     })
   return wb

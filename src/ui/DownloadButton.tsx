@@ -1,15 +1,24 @@
-import { motion } from 'motion/react'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { ChevronDown, Download } from 'lucide-react'
+import { panelClass } from './components/popover'
 import { useState } from 'react'
 import { useLedger } from '../store/useLedger'
 
 export function DownloadButton() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
-  async function download() {
+  async function download(format: 'excel' | 'pdf') {
+    const pdf = format === 'pdf'
     setBusy(true)
-    setMsg('Preparing workbook…')
+    setMsg(pdf ? 'Preparing PDF…' : 'Preparing workbook…')
     try {
       const { state } = useLedger.getState()
+      if (pdf) {
+        const { statementPdf } = await import('../export/statement')
+        statementPdf(state).save(`Ledger-Statement-${state.month}.pdf`)
+        setMsg('PDF statement download started.')
+        return
+      }
       const { workbookBlob } = await import('../export/workbook')
       const url = URL.createObjectURL(await workbookBlob(state))
       const a = document.createElement('a')
@@ -20,21 +29,47 @@ export function DownloadButton() {
       setMsg('Excel workbook downloaded.')
     } catch (e) {
       console.error(e)
-      setMsg('Could not create the workbook. Try downloading again.')
+      setMsg('Could not create the download. Try again.')
     } finally {
       setBusy(false)
     }
   }
   return (
     <>
-      <motion.button
-        whileTap={{ scale: 0.96 }}
-        onClick={download}
-        disabled={busy}
-        className="bg-nav rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-      >
-        <span aria-hidden="true">↓</span> Download Excel
-      </motion.button>
+      <Menu>
+        <MenuButton
+          disabled={busy}
+          className="bg-nav inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-white disabled:opacity-60"
+        >
+          <Download size={16} aria-hidden="true" />
+          Download
+          <ChevronDown size={14} aria-hidden="true" />
+        </MenuButton>
+        <MenuItems
+          anchor="bottom end"
+          transition
+          className={`${panelClass} w-52 p-1`}
+        >
+          <MenuItem>
+            <button
+              type="button"
+              onClick={() => void download('excel')}
+              className="data-[focus]:bg-surface block w-full rounded-lg px-3 py-2 text-left text-sm"
+            >
+              Excel workbook (.xlsx)
+            </button>
+          </MenuItem>
+          <MenuItem>
+            <button
+              type="button"
+              onClick={() => void download('pdf')}
+              className="data-[focus]:bg-surface block w-full rounded-lg px-3 py-2 text-left text-sm"
+            >
+              Monthly statement (.pdf)
+            </button>
+          </MenuItem>
+        </MenuItems>
+      </Menu>
       <span role="status" className="sr-only">
         {msg}
       </span>
