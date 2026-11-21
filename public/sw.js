@@ -12,6 +12,12 @@ async function precache() {
     ),
   ].map((m) => m[1])
   const urls = new Set([SHELL, ...assets])
+  // Lazy chunks (charts, Excel export) are named inside the main script.
+  for (const js of [...urls].filter((u) => u.endsWith('.js'))) {
+    const text = await (await fetch(js)).text()
+    for (const m of text.matchAll(/assets\/[\w.-]+\.(?:js|css)/g))
+      urls.add('/' + m[0])
+  }
   for (const css of [...urls].filter((u) => u.endsWith('.css'))) {
     const text = await (await fetch(css)).text()
     for (const m of text.matchAll(/url\((\/assets\/[^)]+)\)/g)) urls.add(m[1])

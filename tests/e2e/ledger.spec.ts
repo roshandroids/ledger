@@ -268,5 +268,8 @@ test('works offline after the first visit and installs a service worker', async 
   await expect(
     page.getByRole('heading', { level: 1, name: 'Transactions' }),
   ).toBeVisible()
+  // Lazy chart chunks must be cached too.
+  await page.goto('/overview')
+  await expect(page.locator('svg.recharts-surface').first()).toBeVisible()
   await context.setOffline(false)
 })
