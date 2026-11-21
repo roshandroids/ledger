@@ -9,8 +9,8 @@ interface Props {
 
 export function Panel({ title, subtitle, action, children }: Props) {
   return (
-    <section className="border-line rounded-xl border bg-card p-5">
-      <div className="mb-4 flex items-start justify-between gap-4">
+    <section className="border-line min-w-0 rounded-xl border bg-card p-4 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
           {subtitle && <p className="text-muted text-sm">{subtitle}</p>}

@@ -4,6 +4,8 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -16,28 +18,37 @@ export interface TrendSeries {
   color: string
 }
 
-/** Grouped bars per month. Decorative: the page shows the same numbers in a table. */
+/** Month-by-month chart with values also available in the caller’s table. */
 export function TrendChart({
   data,
   series,
+  variant = 'bar',
 }: {
-  data: ({ name: string } & Record<string, number | string>)[]
+  data: ({ name: string } & Record<string, number | string | null>)[]
   series: TrendSeries[]
+  variant?: 'bar' | 'line'
 }) {
   const reduced = useReducedMotion()
+  const Chart = variant === 'line' ? LineChart : BarChart
   return (
-    <div aria-hidden="true" className="h-64">
+    <div aria-hidden="true" className="h-60 min-w-0 sm:h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart
+        <Chart
           accessibilityLayer={false}
           data={data}
           margin={{ left: 8, right: 8 }}
         >
           <CartesianGrid vertical={false} stroke="var(--line)" />
-          <XAxis dataKey="name" tickLine={false} />
+          <XAxis
+            dataKey="name"
+            tickLine={false}
+            tick={{ fill: 'var(--muted)', fontSize: 11 }}
+            minTickGap={12}
+          />
           <YAxis
             tickFormatter={(v: number) => fmt(v)}
-            width={80}
+            width="auto"
+            tick={{ fill: 'var(--muted)', fontSize: 11 }}
             tickLine={false}
             axisLine={false}
           />
@@ -51,16 +62,27 @@ export function TrendChart({
             }}
           />
           <Legend />
-          {series.map((s) => (
-            <Bar
-              key={s.key}
-              dataKey={s.key}
-              fill={s.color}
-              radius={4}
-              isAnimationActive={!reduced}
-            />
-          ))}
-        </BarChart>
+          {series.map((s) =>
+            variant === 'line' ? (
+              <Line
+                key={s.key}
+                dataKey={s.key}
+                stroke={s.color}
+                strokeWidth={2.5}
+                dot={{ r: 3, fill: s.color }}
+                isAnimationActive={!reduced}
+              />
+            ) : (
+              <Bar
+                key={s.key}
+                dataKey={s.key}
+                fill={s.color}
+                radius={4}
+                isAnimationActive={!reduced}
+              />
+            ),
+          )}
+        </Chart>
       </ResponsiveContainer>
     </div>
   )

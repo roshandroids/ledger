@@ -115,3 +115,21 @@ dialog::backdrop {
     transition-duration: 0s !important;
   }
 }
+
+.savings-progress {
+  appearance: none;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--nav-active);
+}
+.savings-progress::-webkit-progress-bar {
+  background: var(--nav-active);
+}
+.savings-progress::-webkit-progress-value {
+  border-radius: 9999px;
+  background: var(--mint);
+}
+.savings-progress::-moz-progress-bar {
+  border-radius: 9999px;
+  background: var(--mint);
+}

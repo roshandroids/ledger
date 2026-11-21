@@ -1,5 +1,14 @@
 import type { CategoryRow } from '../domain'
 
+const monthFormat = new Intl.DateTimeFormat('en-CA', {
+  month: 'short',
+  year: '2-digit',
+  timeZone: 'UTC',
+})
+
+export const monthLabel = (month: string) =>
+  monthFormat.format(new Date(month + '-01T00:00:00Z'))
+
 export const palette = [
   '#327b70',
   '#6692d5',

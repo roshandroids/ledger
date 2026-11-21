@@ -21,12 +21,12 @@ export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
   const reduced = useReducedMotion()
   const data = rows.map((r) => ({
     name: r.name,
-    Plan: r.plan ?? 0,
-    Actual: r.actual ?? 0,
+    Plan: r.plan,
+    Actual: r.actual,
   }))
   return (
     <div>
-      <div aria-hidden="true" className="h-64">
+      <div aria-hidden="true" className="h-60 min-w-0 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             accessibilityLayer={false}
@@ -34,10 +34,16 @@ export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
             margin={{ left: 8, right: 8 }}
           >
             <CartesianGrid vertical={false} stroke="var(--line)" />
-            <XAxis dataKey="name" tickLine={false} />
+            <XAxis
+              dataKey="name"
+              tickLine={false}
+              interval={0}
+              tick={{ fill: 'var(--muted)', fontSize: 10 }}
+            />
             <YAxis
               tickFormatter={(v: number) => fmt(v)}
-              width={80}
+              width="auto"
+              tick={{ fill: 'var(--muted)', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
             />

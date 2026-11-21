@@ -6,16 +6,8 @@ import { Panel } from '../components/Panel'
 import { Select } from '../components/Select'
 import { TrendChart } from '../components/TrendChart'
 import { fmt, pct } from '../format'
-import { palette } from '../chartData'
+import { monthLabel, palette } from '../chartData'
 
-const label = new Intl.DateTimeFormat('en-CA', {
-  month: 'short',
-  year: '2-digit',
-})
-const monthLabel = (m: string) => {
-  const [y, mo] = m.split('-').map(Number)
-  return label.format(new Date(y, mo - 1, 1))
-}
 const ranges: [string, string][] = [
   ['3', 'Last 3 months'],
   ['6', 'Last 6 months'],

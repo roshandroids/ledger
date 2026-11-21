@@ -5,6 +5,7 @@ interface Props {
   title: string
   children: ReactNode
   confirmLabel?: string
+  confirmDisabled?: boolean
   /** Omit for an informational dialog with a single OK button. */
   onConfirm?(): void
   onClose(): void
@@ -15,6 +16,7 @@ export function ConfirmDialog({
   title,
   children,
   confirmLabel = 'Confirm',
+  confirmDisabled = false,
   onConfirm,
   onClose,
 }: Props) {
@@ -51,11 +53,12 @@ export function ConfirmDialog({
         </button>
         {onConfirm && (
           <button
+            disabled={confirmDisabled}
             onClick={() => {
               onConfirm()
               onClose()
             }}
-            className="bg-nav rounded-lg px-3 py-2 text-sm font-semibold text-white"
+            className="bg-nav rounded-lg px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
             {confirmLabel}
           </button>
