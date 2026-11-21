@@ -161,13 +161,20 @@ Estimated total for phases 0-9: about 12-17 working days for one developer.
 Gap analysis against a typical budget planner, plus unfinished items from phases 0-9. Each phase keeps the rules above: ends green (lint, typecheck, unit, e2e + axe), own commit or PR, no backend. Any change to the stored shape bumps `SCHEMA_VERSION` with a migration and a test that loads the previous version's blob.
 
 ### 10.0 Close out the open items (1 day)
-Status: restore from Drive is done; the rest needs the live site, Google Cloud console and a machine where LibreOffice runs.
-- Deploy on Netlify with the custom Porkbun subdomain; HTTPS on.
-- Lighthouse pass on the live URL (performance, a11y, best practices, SEO); fix anything under 90.
-- Test Drive saving against real Google (`VITE_GOOGLE_CLIENT_ID` in Netlify, site URL in authorized origins).
-- LibreOffice recalculation check of the exported workbook on a machine where it runs.
-- Add restore from Drive (list `drive.file` backups, pick one, `replaceState`). Without it Drive is write-only.
-- Done when the live site passes the e2e smoke test and a Drive save then restore round-trips.
+Verified 2026-11-21. Production (https://ledger.rsprojects.dev) serves `assets/index-qDGuiTFI.js`, which matches no local build. By feature strings it contains 10.1-10.5 (filters, trends, limits, bills, CSV import) but not 10.6 (accounts), so it is about `d5043ae` (origin/main). Local checks ran on `b4ee594` (local, not pushed), so results marked "local" cover accounts and "prod" results do not.
+
+| Item | Result | Evidence |
+|---|---|---|
+| Local baseline | Verified (local, `b4ee594`) | `tsc -b`, oxlint, 144 unit tests (1 skipped), `vite build`, 20 Playwright tests incl. axe light and dark on 6 pages all pass |
+| Deploy, custom domain, HTTPS | Verified (prod) | Let's Encrypt cert for `ledger.rsprojects.dev`, valid 2026-11-21 to 2027-02-19; HSTS, COOP and nosniff headers present |
+| Direct routes and hard refresh | Verified (prod) | `/overview`, `/budget`, `/transactions` open directly and survive reload on desktop (1280x800) and mobile (375x812) |
+| Prod smoke test | Verified (prod) | `tests/prod/smoke.spec.ts`: start blank, add and edit transactions, filter and clear, month switch, reload persistence, Excel download (`PK` zip), logo and launcher icon load. 10 of 10 pass. Run with `SMOKE_URL=<url> npx playwright test -c playwright.prod.config.ts` |
+| Lighthouse | Verified (prod), all categories at or above 90 | Pages overview, budget, transactions. Desktop: performance 100, accessibility 100, best practices 100, SEO 92. Mobile: performance 91 (overview, LCP 3.4 s), 95 (budget), 100 (transactions); accessibility 100; best practices 100; SEO 92 |
+| Lighthouse follow-ups | Open, minor | SEO 92 is `robots.txt` falling through to the SPA fallback; `public/robots.txt` added here, takes effect on the next deploy. Mobile overview LCP is limited by the 1.2 MB main bundle (370 kB gzip); route-level code splitting is the fix. `/favicon.ico` also falls through to HTML (the page links PNG and SVG icons) |
+| Drive save and restore round-trip | Open | Not configured in production: the build has no `VITE_GOOGLE_CLIENT_ID`, so the Drive buttons are not rendered. Needs the env var in Netlify, the site URL in the OAuth client's authorized JavaScript origins, and a Google test account. Unit tests cover the upload, restore and 404 paths with a mocked `fetch` |
+| LibreOffice recalculation | Open | `soffice` on this Mac is the x86 cask and fails with "Bad CPU type" (no Rosetta). Needs an arm64 LibreOffice or Rosetta, or another machine. The workbook round-trip tests already compare cached values to `report()` |
+| Add restore from Drive | Done | Commit `b13ce9e` |
+
 
 ### 10.1 Transaction search, filter, sort (1-2 days)
 Status: done. Notes already existed (`notes`), so no schema bump. Amount sort puts invalid rows last; filters are in the URL; adding a row clears filters so the blank row is visible.
@@ -256,4 +263,4 @@ Backend and accounts, multi-currency, CSV or bank import, recurring-transaction 
 
 ## 9. Status
 
-Phases 0-9 done and pushed; CI (lint, typecheck, unit, build, e2e with axe in light and dark) is green. Remaining: hosting, a Lighthouse pass, and a LibreOffice recalculation check on a machine where it runs. Two Phase-2 decisions: floats kept (not cents), live Excel formulas kept. Added beyond plan: theming, category icons, JSON backup/restore, Google Drive saving. Next: Phase 10 (section 5b), starting with 10.0 close-out.
+Phases 0-9 done and pushed; CI (lint, typecheck, unit, build, e2e with axe in light and dark) is green. Remaining: hosting, a Lighthouse pass, and a LibreOffice recalculation check on a machine where it runs. Two Phase-2 decisions: floats kept (not cents), live Excel formulas kept. Added beyond plan: theming, category icons, JSON backup/restore, Google Drive saving. Phase 10: 10.1-10.6 done (10.6 local, not pushed); 10.0 verified except Drive round-trip and LibreOffice recalculation; 10.7 (PWA, multi-currency display, optional app lock) is the next unstarted item.
