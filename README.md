@@ -1,10 +1,16 @@
 # Ledger
 
-Ledger is a local-first monthly budget planner. It shows what you plan to earn, spend, and save alongside what you actually record. Use it at [ledger.rsprojects.dev](https://ledger.rsprojects.dev).
+[![Ledger — monthly budget planner, illustrated with a notebook and spending charts](public/brand/ledger-banner.webp)](https://ledger.rsprojects.dev)
+
+Ledger is a local-first monthly budget planner. It shows what you plan to earn, spend, and save alongside what you actually record.
+
+**[Open Ledger](https://ledger.rsprojects.dev)** · [Set up your first month](#set-up-your-first-month) · [See what’s new](CHANGELOG.md)
 
 Your ledger is saved in the current browser profile. It works offline after an initial online visit and can be installed where the browser supports it. Use a JSON backup to move to another browser or device.
 
 ## Set up your first month
+
+<img src="public/brand/monthly-budget.webp" width="200" alt="An open budget notebook with a checkmark and pencil">
 
 1. **Choose a month and start blank.** The sample budget lets you explore the app. Select **Start blank** on the sample banner when you’re ready to enter your own data. The month picker controls which month Overview and the reports show.
 2. **Enter your take-home pay.** In **Budget → Pay and monthly target**, enter the amount you receive after deductions **per paycheck**. Choose **Twice monthly** for two paychecks per calendar month or **Biweekly** for a paycheck every 14 days. Ledger averages recurring payments over the year. At $2,487 per paycheck, that’s $4,974.00 twice monthly or $5,388.50 biweekly. Choose the ledger currency and set a monthly savings target.
@@ -13,6 +19,8 @@ Your ledger is saved in the current browser profile. It works offline after an i
 5. **Record actuals.** In **Transactions**, enter income and expenses with the date and amount, or import a bank CSV. Review Overview’s **Actual** figures and the income and spending trend as the month progresses.
 
 ## Import a bank CSV
+
+<img src="public/brand/transactions.webp" width="175" alt="A receipt and coins in a tray">
 
 Get a CSV export from your bank or card provider, then open **Transactions → Import and export**. Select the file and map the date, description, and either the amount column or separate debit and credit columns. Review each row’s amount, type, category, and account before importing. Ledger flags invalid and previously imported rows in the preview.
 
@@ -31,6 +39,15 @@ Enter transactions that are missing from the CSV separately. Record transfers be
 - In **Settings → Appearance**, choose a theme, color palette, font, and interface language. Settings also contains **Install app** when the browser offers installation.
 - **App lock** adds a passcode screen. Your browser storage remains readable outside that screen, so use your device’s security controls for protection.
 - **Clear cache and start fresh** clears Ledger’s offline cache, local data, and preferences after confirmation. Exported files and Google Drive backups are kept.
+
+## Ledger artwork
+
+<p>
+  <img src="public/brand/ledger-logo.png" width="175" alt="Ledger wordmark">
+  <img src="public/brand/ledger-launcher-192.png" width="64" alt="Ledger app icon">
+</p>
+
+[Browse the brand assets](public/brand) for the wordmark, launcher icon, banner, and illustrations.
 
 ## Develop locally
 
