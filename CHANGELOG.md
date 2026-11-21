@@ -2,6 +2,11 @@
 
 Each production release has a version and a dated entry below. Newest releases appear first.
 
+## [0.2.0] - 2026-11-21
+
+- Log an expense from an English voice or typed command, then review and edit it before saving.
+- Read the Google OAuth client ID from GitHub's production secret or variable so the live build can offer Drive and email sign-in.
+
 ## [0.1.0] - 2026-11-21
 
 - Plan monthly income, expenses, recurring bills, and savings, and compare the plan with recorded transactions.

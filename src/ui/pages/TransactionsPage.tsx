@@ -1,3 +1,4 @@
+import { Mic } from 'lucide-react'
 import { useTranslation } from '../i18n'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
@@ -11,6 +12,7 @@ import { DataTable } from '../components/DataTable'
 import { ImportPanel } from '../components/ImportPanel'
 import { MoneyInput } from '../components/MoneyInput'
 import { Panel } from '../components/Panel'
+import { QuickExpense } from '../components/QuickExpense'
 import { Select } from '../components/Select'
 import { SplitDialog } from '../components/SplitDialog'
 import { TagsInput } from '../components/TagsInput'
@@ -40,12 +42,13 @@ const btn = 'border-line rounded-lg border px-3 py-2 text-sm font-semibold'
 export function TransactionsPage() {
   const t = useTranslation()
   const state = useLedger((s) => s.state)
-  const { addRow, updateRow, removeRow } = useLedger.getState()
+  const { addRow, addTransactions, updateRow, removeRow } = useLedger.getState()
   const [params, setParams] = useSearchParams()
   const filter = useMemo(() => parseFilter(params), [params])
   const setFilter = (patch: Partial<TxFilter>) =>
     setParams(toParams({ ...filter, ...patch }), { replace: true })
   const [selected, setSelected] = useState<number[]>([])
+  const [quickExpense, setQuickExpense] = useState(false)
   const [bulkCategory, setBulkCategory] = useState('')
   const [splitting, setSplitting] = useState<number | null>(null)
   const tags = useMemo(
@@ -101,13 +104,35 @@ export function TransactionsPage() {
   ]
   return (
     <>
+      {quickExpense && (
+        <QuickExpense
+          state={state}
+          categories={categorySuggestions}
+          accounts={accountChoices}
+          onClose={() => setQuickExpense(false)}
+          onSave={(expense) => {
+            setParams({}, { replace: true })
+            setSelected([])
+            addTransactions([expense])
+          }}
+        />
+      )}
       <Panel
         title={t('Transactions')}
         subtitle="Record what actually happened. Rows with an invalid date or amount are ignored."
         action={
-          <AddButton ref={addRef} onClick={onAdd}>
-            + Add transaction
-          </AddButton>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setQuickExpense(true)}
+              className={`${btn} inline-flex items-center gap-2`}
+            >
+              <Mic size={16} aria-hidden="true" /> Quick expense
+            </button>
+            <AddButton ref={addRef} onClick={onAdd}>
+              + Add transaction
+            </AddButton>
+          </div>
         }
       >
         {state.transactions.length > 0 && (

@@ -172,8 +172,10 @@ export function DrivePanel() {
         </div>
       ) : (
         <p className="text-muted text-sm">
-          Not configured. Set <code>VITE_GOOGLE_CLIENT_ID</code> (see README) to
-          enable this.
+          Google integration is unavailable in this build. For production, add{' '}
+          <code>VITE_GOOGLE_CLIENT_ID</code> as a GitHub Actions secret or
+          variable in the <code>production</code> environment before the next
+          release.
         </p>
       )}
       <p role="status" className="text-muted mt-3 text-sm">

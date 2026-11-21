@@ -18,6 +18,12 @@ Your ledger is saved in the current browser profile. It works offline after an i
 4. **Schedule recurring bills.** On an eligible budget item, select **Make recurring** and pick the first bill date. Ledger moves it to **Recurring bills and income** and keeps it in the plan. The **Include** checkbox controls whether a recurring expense or savings transfer counts toward the plan. Review due dates in Overview and mark a bill paid when you want Ledger to record its transaction. If you already imported the payment, avoid recording it a second time.
 5. **Record actuals.** In **Transactions**, enter income and expenses with the date and amount, or import a bank CSV. Review Overview’s **Actual** figures and the income and spending trend as the month progresses.
 
+## Log an expense by voice
+
+Open **Transactions → Quick expense → Use microphone** and say an English command such as “Log 20 bucks for gas.” You can also type the same command and select **Preview expense**. Check the amount, date, category, and account, then select **Save expense**. Ledger suggests Transportation for gas when it cannot match an existing fuel budget item.
+
+Microphone recognition depends on the browser and may use its online speech service. The typed command works without microphone access.
+
 ## Import a bank CSV
 
 <img src="public/brand/transactions.webp" width="175" alt="A receipt and coins in a tray">
@@ -80,7 +86,7 @@ The local storage adapter migrates the old `ledger-budget-v1` entry to `ledger-b
 
 1. Enable the **Google Drive API** in Google Cloud and configure the OAuth consent screen. Enable the **Gmail API** if you want email delivery.
 2. Create a **Web application** OAuth client. Add `http://localhost:5173` and the live site origin under **Authorized JavaScript origins**.
-3. For local development, set `VITE_GOOGLE_CLIENT_ID=<id>.apps.googleusercontent.com` in `.env.local`. For production, set the same name as a GitHub Actions variable in the `production` environment. For Netlify Deploy Previews, also set it in Netlify and authorize the preview origin if you need to test Google features there.
+3. For local development, set `VITE_GOOGLE_CLIENT_ID=<id>.apps.googleusercontent.com` in `.env.local`. For production, set the same name as a GitHub Actions secret or variable in the `production` environment. For Netlify Deploy Previews, also set it in Netlify and authorize the preview origin if you need to test Google features there.
 
 Drive access is scoped to files created by Ledger. Tokens are kept in memory for the active browser session.
 
@@ -91,7 +97,7 @@ GitHub Actions owns production deployment. A new production version must have bo
 ### One-time setup
 
 1. In Netlify, copy the existing site’s **Project ID** and create a Netlify personal access token with access to that project.
-2. In GitHub, open **Settings → Environments → production**. Add environment secrets named `NETLIFY_SITE_ID` and `NETLIFY_AUTH_TOKEN`. If Google integration is enabled, set the `VITE_GOOGLE_CLIENT_ID` environment variable described above.
+2. In GitHub, open **Settings → Environments → production**. Add environment secrets named `NETLIFY_SITE_ID` and `NETLIFY_AUTH_TOKEN`. If Google integration is enabled, set the `VITE_GOOGLE_CLIENT_ID` secret or variable described above.
 3. Keep the existing Netlify Git connection for Deploy Previews. The checked-in Netlify ignore rule skips ordinary Git-triggered production builds. Use the GitHub workflow for production. Retire any legacy production build hooks or external deployment jobs that bypass it.
 
 See the [Netlify CLI setup guide](https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/) for the token and project ID locations.

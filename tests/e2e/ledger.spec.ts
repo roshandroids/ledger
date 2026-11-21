@@ -154,6 +154,55 @@ test('Start fresh confirms before clearing Ledger data and offline cache', async
   expect(data.preference).toBe('keep')
 })
 
+test('quick expense previews speech before saving and accepts typed commands', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'SpeechRecognition', {
+      configurable: true,
+      value: class {
+        onresult?: (event: { results: { transcript: string }[][] }) => void
+        onend?: () => void
+        start() {
+          setTimeout(() => {
+            this.onresult?.({
+              results: [[{ transcript: 'log twenty bucks for gas' }]],
+            })
+            this.onend?.()
+          }, 0)
+        }
+        abort() {}
+      },
+    })
+  })
+  await page.goto('/transactions')
+  await page.getByRole('button', { name: 'Quick expense' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Quick expense' })
+  const save = dialog.getByRole('button', { name: 'Save expense' })
+  await expect(save).toBeDisabled()
+  await dialog.getByRole('button', { name: 'Use microphone' }).click()
+  await expect(dialog.getByLabel('Expense amount')).toHaveValue('20')
+  await expect(
+    dialog.getByLabel('Expense category', { exact: true }),
+  ).toHaveValue('Transportation')
+  await expect(page.getByRole('table', { name: 'Transactions' })).toHaveCount(0)
+  await save.click()
+  await expect(
+    page.getByRole('table', { name: 'Transactions' }).getByLabel('Notes'),
+  ).toHaveValue('gas')
+  await page.getByRole('button', { name: 'Quick expense' }).click()
+  await dialog.getByLabel('Expense command').fill('log $12.50 for Groceries')
+  await dialog.getByRole('button', { name: 'Preview expense' }).click()
+  await expect(dialog.getByLabel('Expense amount')).toHaveValue('12.5')
+  await expect(
+    dialog.getByLabel('Expense category', { exact: true }),
+  ).toHaveValue('Groceries')
+  await dialog.getByRole('button', { name: 'Cancel' }).click()
+  await expect(
+    page.getByRole('table', { name: 'Transactions' }).getByLabel('Notes'),
+  ).toHaveCount(1)
+})
+
 test('desktop sidebar can collapse to icons and expand again', async ({
   page,
 }) => {

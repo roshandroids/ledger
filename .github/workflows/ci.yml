@@ -84,7 +84,7 @@ jobs:
       - name: Build versioned site
         if: steps.version.outputs.publish == 'true'
         env:
-          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID || vars.VITE_GOOGLE_CLIENT_ID }}
         run: |
           npm run build
           node scripts/prepare-release.mjs
