@@ -1,10 +1,12 @@
-import { Cloud, CloudDownload } from 'lucide-react'
+import { Cloud, CloudDownload, Mail } from 'lucide-react'
 import { useState } from 'react'
 import {
   clientId,
   getAccessToken,
+  getGmailToken,
   loadLatestBackup,
   saveToDrive,
+  sendEmail,
   type DriveKind,
 } from '../../drive/google'
 import type { State } from '../../domain'
@@ -16,6 +18,16 @@ import {
 import { useLedger } from '../../store/useLedger'
 import { ConfirmDialog } from './ConfirmDialog'
 import { Panel } from './Panel'
+import { TextInput } from './TextInput'
+
+const EMAIL_KEY = 'ledger-email-to'
+const readEmail = () => {
+  try {
+    return localStorage.getItem(EMAIL_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
 
 const btn =
   'border-line flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold disabled:opacity-60'
@@ -25,6 +37,7 @@ export function DrivePanel() {
   const [msg, setMsg] = useState('')
   const [link, setLink] = useState<string>()
   const [pending, setPending] = useState<State | null>(null)
+  const [email, setEmail] = useState(readEmail)
 
   async function restore() {
     if (!clientId) return
@@ -45,6 +58,45 @@ export function DrivePanel() {
         )
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Could not read Google Drive.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function mail() {
+    if (!clientId) return
+    if (!/^\S+@\S+\.\S+$/.test(email))
+      return setMsg('Enter a valid email address.')
+    setBusy(true)
+    setLink(undefined)
+    setMsg('Sending email…')
+    try {
+      try {
+        localStorage.setItem(EMAIL_KEY, email)
+      } catch {
+        // storage unavailable: the address just isn't remembered
+      }
+      const { state } = useLedger.getState()
+      const { emailContent } = await import('../../export/emailBody')
+      const { statementPdf } = await import('../../export/statement')
+      const { subject, ...body } = emailContent(state)
+      await sendEmail(await getGmailToken(clientId), email, subject, body, [
+        {
+          name: `Ledger-${state.month}.xlsx`,
+          mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          blob: await (
+            await import('../../export/workbook')
+          ).workbookBlob(state),
+        },
+        {
+          name: `Ledger-Statement-${state.month}.pdf`,
+          mime: 'application/pdf',
+          blob: statementPdf(state).output('blob'),
+        },
+      ])
+      setMsg(`Emailed to ${email}.`)
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Could not send the email.')
     } finally {
       setBusy(false)
     }
@@ -85,8 +137,8 @@ export function DrivePanel() {
 
   return (
     <Panel
-      title="Google Drive"
-      subtitle="Sign in with Google to save your workbook or backup to your own Drive. Ledger can only see files it creates."
+      title="Google Drive & email"
+      subtitle="Sign in with Google to save your workbook or backup to your own Drive, or email the workbook and PDF to yourself. Ledger can only see files it creates."
     >
       {clientId ? (
         <div className="flex flex-wrap gap-3">
@@ -103,6 +155,20 @@ export function DrivePanel() {
           <button className={btn} disabled={busy} onClick={restore}>
             <CloudDownload size={16} aria-hidden="true" /> Restore from Drive
           </button>
+          <div className="flex w-full flex-wrap gap-3">
+            <div className="min-w-56 flex-1">
+              <TextInput
+                label="Email address"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={setEmail}
+              />
+            </div>
+            <button className={btn} disabled={busy} onClick={mail}>
+              <Mail size={16} aria-hidden="true" /> Email report to me
+            </button>
+          </div>
         </div>
       ) : (
         <p className="text-muted text-sm">
