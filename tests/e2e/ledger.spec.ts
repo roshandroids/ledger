@@ -67,6 +67,93 @@ test('navigation Settings changes appearance and opens the install prompt', asyn
   )
 })
 
+test('appearance preferences and languages apply across pages and survive reload', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/settings')
+  await page.getByRole('radio', { name: 'Ocean' }).check()
+  await page.getByLabel('Font', { exact: true }).selectOption('serif')
+  await page.getByLabel('Language', { exact: true }).selectOption('fr')
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'ocean')
+  await expect(page.locator('body')).toHaveCSS('font-family', /Georgia/)
+  await expect(page.getByRole('heading', { name: 'Paramètres' })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('radio', { name: 'Océan' })).toBeChecked()
+  await expect(page.getByLabel('Police', { exact: true })).toHaveValue('serif')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
+  await page.getByRole('link', { name: 'Aperçu', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Vue mensuelle' }),
+  ).toBeVisible()
+  await expect(
+    page.getByText('Revenu net', { exact: true }).first(),
+  ).toBeVisible()
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+    .toBeLessThanOrEqual(360)
+  await page.getByRole('link', { name: 'Paramètres', exact: true }).click()
+  await page.getByLabel('Langue', { exact: true }).selectOption('es')
+  await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible()
+})
+
+test('Nepali, Japanese and Arabic preferences localize the shell and persist', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/settings')
+  await page.getByRole('radio', { name: 'Cobalt' }).check()
+  await page.getByLabel('Font', { exact: true }).selectOption('editorial')
+  await page.getByLabel('Language', { exact: true }).selectOption('ne')
+  await expect(page.getByRole('heading', { name: 'सेटिङहरू' })).toBeVisible()
+  await page.getByLabel('भाषा', { exact: true }).selectOption('ja')
+  await expect(page.getByRole('heading', { name: '設定' })).toBeVisible()
+  await page.getByLabel('言語', { exact: true }).selectOption('ar')
+  await expect(page.getByRole('heading', { name: 'الإعدادات' })).toBeVisible()
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ar')
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'cobalt')
+  await expect(page.locator('body')).toHaveCSS('font-family', /Palatino/)
+  await page.getByRole('link', { name: 'نظرة عامة', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: 'نظرة عامة شهرية' }),
+  ).toBeVisible()
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+    .toBeLessThanOrEqual(360)
+})
+
+test('Start fresh confirms before clearing Ledger data and offline cache', async ({
+  page,
+}) => {
+  await page.goto('/settings')
+  await page.getByRole('radio', { name: 'Dark' }).check()
+  await page.evaluate(async () => {
+    localStorage.setItem('unrelated-preference', 'keep')
+    await caches.open('ledger-reset-test')
+    await caches.open('unrelated-cache')
+  })
+  const reset = page.getByRole('button', {
+    name: 'Clear cache and start fresh',
+  })
+  await reset.click()
+  await page.getByRole('button', { name: 'Cancel' }).click()
+  await expect(page.getByRole('radio', { name: 'Dark' })).toBeChecked()
+  await reset.click()
+  await page.getByRole('button', { name: 'Erase local data' }).click()
+  await expect(page).toHaveURL(/overview$/)
+  await expect(page.getByText('Sample budget')).toHaveCount(0)
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark')
+  const data = await page.evaluate(async () => ({
+    caches: await caches.keys(),
+    preference: localStorage.getItem('unrelated-preference'),
+  }))
+  expect(data.caches).not.toContain('ledger-reset-test')
+  expect(data.caches).toContain('unrelated-cache')
+  expect(data.preference).toBe('keep')
+})
+
 test('desktop sidebar can collapse to icons and expand again', async ({
   page,
 }) => {

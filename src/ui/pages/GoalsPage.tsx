@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useMemo, useState } from 'react'
 import { report } from '../../domain'
 import { useLedger } from '../../store/useLedger'
@@ -11,6 +12,7 @@ import { fmt, pct } from '../format'
 import { useRowFocus } from '../useRowFocus'
 
 export function GoalsPage() {
+  const t = useTranslation()
   const state = useLedger((s) => s.state)
   const { addRow, updateRow, removeRow } = useLedger.getState()
   const [blocked, setBlocked] = useState(false)
@@ -27,7 +29,7 @@ export function GoalsPage() {
   return (
     <>
       <Panel
-        title="Savings goals"
+        title={t('Savings goals')}
         subtitle="Balance is the opening balance plus transfers, minus withdrawals and fund expenses, up to the selected month."
         action={
           <AddButton ref={addRef} onClick={onAdd}>
@@ -37,7 +39,7 @@ export function GoalsPage() {
       >
         <div ref={tableRef}>
           <DataTable
-            caption="Savings goals"
+            caption={t('Savings goals')}
             headers={[
               'Goal',
               'Target balance',

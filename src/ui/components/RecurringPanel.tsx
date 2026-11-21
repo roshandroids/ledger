@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { recurringCadences, recurringTypes } from '../../domain'
 import type { Recurring } from '../../domain'
 import { useLedger } from '../../store/useLedger'
@@ -12,6 +13,7 @@ import { CategoryInput } from './CategoryInput'
 import { useRowFocus } from '../useRowFocus'
 
 export function RecurringPanel() {
+  const t = useTranslation()
   const state = useLedger((s) => s.state)
   const { addRow, updateRow, removeRow } = useLedger.getState()
   const { tableRef, addRef, onAdd, onRemove } = useRowFocus(
@@ -27,7 +29,7 @@ export function RecurringPanel() {
   ])
   return (
     <Panel
-      title="Recurring bills and income"
+      title={t('Recurring bills and income')}
       subtitle="Rules create dated transactions for a month on demand. Overview shows what is paid, due soon or overdue."
       action={
         <AddButton ref={addRef} onClick={onAdd}>

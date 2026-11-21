@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { accountOf, goalTypes, transactionTypes } from '../../domain'
@@ -37,6 +38,7 @@ const sortOptions: [SortKey, string][] = [
 const btn = 'border-line rounded-lg border px-3 py-2 text-sm font-semibold'
 
 export function TransactionsPage() {
+  const t = useTranslation()
   const state = useLedger((s) => s.state)
   const { addRow, updateRow, removeRow } = useLedger.getState()
   const [params, setParams] = useSearchParams()
@@ -100,7 +102,7 @@ export function TransactionsPage() {
   return (
     <>
       <Panel
-        title="Transactions"
+        title={t('Transactions')}
         subtitle="Record what actually happened. Rows with an invalid date or amount are ignored."
         action={
           <AddButton ref={addRef} onClick={onAdd}>
@@ -241,7 +243,7 @@ export function TransactionsPage() {
         )}
         <div ref={tableRef}>
           <DataTable
-            caption="Transactions"
+            caption={t('Transactions')}
             emptyIllustration="/brand/transactions.webp"
             headers={[
               'Select',

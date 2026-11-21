@@ -1,5 +1,5 @@
 /* Ledger service worker: offline shell. Bump VERSION to drop old caches. */
-const VERSION = 'ledger-v1'
+const VERSION = 'ledger-v2'
 const SHELL = '/index.html'
 
 // Precache the build's own files so the first offline visit works.
@@ -35,7 +35,9 @@ self.addEventListener('activate', (e) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== VERSION).map((k) => caches.delete(k)),
+          keys
+            .filter((k) => k.startsWith('ledger-') && k !== VERSION)
+            .map((k) => caches.delete(k)),
         ),
       )
       .then(() => self.clients.claim()),

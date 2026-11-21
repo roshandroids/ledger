@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { motion, useReducedMotion } from 'motion/react'
 import { useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
@@ -10,6 +11,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 
 export function Shell() {
+  const t = useTranslation()
   const [navCollapsed, setNavCollapsed] = useState(false)
   const { pathname } = useLocation()
   const reduced = useReducedMotion()
@@ -31,7 +33,7 @@ export function Shell() {
       />
       <main className="min-w-0">
         <Topbar
-          title={page.title}
+          title={t(page.title)}
           month={month}
           onMonthChange={(m) => setSetting('month', m)}
           showReportControls={page.path !== 'settings'}
@@ -65,12 +67,12 @@ export function Shell() {
                   onClick={startBlank}
                   className="border-line rounded-lg border bg-card px-3 py-2 text-sm font-semibold"
                 >
-                  Start blank
+                  {t('Start blank')}
                 </button>
               }
             >
-              <strong>Sample budget</strong> · Edit these figures or start with
-              an empty budget.
+              <strong>{t('Sample budget')}</strong> · Edit these figures or
+              start with an empty budget.
             </Notice>
           )}
           <motion.div

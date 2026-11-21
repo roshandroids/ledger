@@ -1,3 +1,4 @@
+import { useTranslation } from './i18n'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDown, Download } from 'lucide-react'
 import { panelClass } from './components/popover'
@@ -5,6 +6,7 @@ import { useState } from 'react'
 import { useLedger } from '../store/useLedger'
 
 export function DownloadButton() {
+  const t = useTranslation()
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   async function download(format: 'excel' | 'pdf') {
@@ -39,10 +41,10 @@ export function DownloadButton() {
       <Menu>
         <MenuButton
           disabled={busy}
-          className="bg-nav inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-white disabled:opacity-60"
+          className="bg-action hover:bg-nav inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-white disabled:opacity-60"
         >
           <Download size={16} aria-hidden="true" />
-          Download
+          {t('Download')}
           <ChevronDown size={14} aria-hidden="true" />
         </MenuButton>
         <MenuItems
@@ -54,18 +56,18 @@ export function DownloadButton() {
             <button
               type="button"
               onClick={() => void download('excel')}
-              className="data-[focus]:bg-surface block w-full rounded-lg px-3 py-2 text-left text-sm"
+              className="data-[focus]:bg-surface block w-full rounded-lg px-3 py-2 text-start text-sm"
             >
-              Excel workbook (.xlsx)
+              {t('Excel workbook (.xlsx)')}
             </button>
           </MenuItem>
           <MenuItem>
             <button
               type="button"
               onClick={() => void download('pdf')}
-              className="data-[focus]:bg-surface block w-full rounded-lg px-3 py-2 text-left text-sm"
+              className="data-[focus]:bg-surface block w-full rounded-lg px-3 py-2 text-start text-sm"
             >
-              Monthly statement (.pdf)
+              {t('Monthly statement (.pdf)')}
             </button>
           </MenuItem>
         </MenuItems>

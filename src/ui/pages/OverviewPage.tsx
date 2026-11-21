@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useMemo, useState } from 'react'
 import {
   limitStatus,
@@ -23,6 +24,7 @@ import { Panel } from '../components/Panel'
 import { fmt, pct } from '../format'
 
 export function OverviewPage() {
+  const t = useTranslation()
   const state = useLedger((s) => s.state)
   const [saving, setSaving] = useState<{
     month: string
@@ -36,7 +38,7 @@ export function OverviewPage() {
   const trend = useMemo(
     () =>
       monthSeries(state, state.month, 6).map(({ month, income, spend }) => ({
-        name: monthLabel(month),
+        name: month,
         Income: income,
         Spending: spend,
       })),
@@ -63,23 +65,31 @@ export function OverviewPage() {
   )
   const flagged = limits.filter((l) => l.level !== 'ok')
   const stats: [string, string, string][] = [
-    ['Take-home income', fmt(r.planIncome), 'Actual ' + fmt(r.actualIncome)],
+    [
+      'Take-home income',
+      fmt(r.planIncome),
+      t('Actual') + ' ' + fmt(r.actualIncome),
+    ],
     [
       'Monthly spending',
       fmt(r.planSpend),
-      'Actual ' + fmt(r.active ? r.actualSpend : null),
+      t('Actual') + ' ' + fmt(r.active ? r.actualSpend : null),
     ],
-    ['Cash before target', fmt(r.planCash), 'Actual ' + fmt(r.actualCash)],
+    [
+      'Cash before target',
+      fmt(r.planCash),
+      t('Actual') + ' ' + fmt(r.actualCash),
+    ],
     ['Savings rate', pct(r.actualRate), 'Planned transfers ' + pct(r.planRate)],
   ]
   const progress =
     r.target > 0 ? Math.max(0, Math.min((r.general / r.target) * 100, 100)) : 0
   return (
     <>
-      <section className="bg-nav grid gap-5 rounded-xl p-5 text-white sm:p-6 lg:grid-cols-2">
+      <section className="from-nav to-nav-active grid bg-linear-to-br gap-5 rounded-xl p-5 text-white sm:p-6 lg:grid-cols-2">
         <div>
           <div className="text-xs font-bold tracking-widest text-slate-300">
-            MONTHLY CASH AFTER SAVINGS TARGET
+            {t('Monthly cash after savings target').toLocaleUpperCase()}
           </div>
           <div
             data-testid="remaining"
@@ -99,7 +109,7 @@ export function OverviewPage() {
         </div>
         <div>
           <div className="flex flex-wrap justify-between gap-2 text-sm">
-            <span>General savings</span>
+            <span>{t('General savings')}</span>
             <strong>{fmt(r.target)} target</strong>
           </div>
           <progress
@@ -185,7 +195,7 @@ export function OverviewPage() {
             key={label}
             className="border-line grid min-w-0 content-start gap-1 rounded-xl border bg-card p-3 sm:p-4"
           >
-            <span className="text-muted text-sm">{label}</span>
+            <span className="text-muted text-sm">{t(label)}</span>
             <strong className="wrap-anywhere text-xl sm:text-2xl">
               {value}
             </strong>
@@ -195,37 +205,43 @@ export function OverviewPage() {
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel
-          title="Monthly cash flow"
-          subtitle="Planned vs. actual for the selected month"
+          title={t('Monthly cash flow')}
+          subtitle={t('Planned vs. actual for the selected month')}
         >
           <CashFlowChart
             rows={[
-              { name: 'Income', plan: r.planIncome, actual: r.actualIncome },
+              { name: t('Income'), plan: r.planIncome, actual: r.actualIncome },
               {
-                name: 'Spending',
+                name: t('Spending'),
                 plan: r.planSpend,
                 actual: r.active ? r.actualSpend : null,
               },
               {
-                name: 'Net savings',
+                name: t('Net savings'),
                 plan: r.planSaved,
                 actual: r.active ? r.actualSaved : null,
               },
             ]}
           />
         </Panel>
-        <Panel title="Where it goes" subtitle="Planned spending by category">
+        <Panel
+          title={t('Where it goes')}
+          subtitle={t('Planned spending by category')}
+        >
           <SpendingDonut rows={ringRows(r.breakdown)} total={r.planSpend} />
         </Panel>
       </div>
       <Panel
-        title="Income and spending trend"
-        subtitle="Actuals for the six months ending in the selected month"
+        title={t('Income and spending trend')}
+        subtitle={t('Actuals for the six months ending in the selected month')}
       >
         {trend.some((row) => row.Income !== null || row.Spending !== null) ? (
           <>
             <TrendChart
-              data={trend}
+              data={trend.map((row) => ({
+                ...row,
+                name: monthLabel(row.name),
+              }))}
               variant="line"
               series={[
                 { key: 'Income', color: 'var(--actual)' },
@@ -244,7 +260,7 @@ export function OverviewPage() {
               <tbody>
                 {trend.map((row) => (
                   <tr key={row.name}>
-                    <th scope="row">{row.name}</th>
+                    <th scope="row">{monthLabel(row.name)}</th>
                     <td>{fmt(row.Income)}</td>
                     <td>{fmt(row.Spending)}</td>
                   </tr>
@@ -254,17 +270,19 @@ export function OverviewPage() {
           </>
         ) : (
           <p className="text-muted text-sm">
-            Record transactions to see your income and spending over time.
+            {t(
+              'Record transactions to see your income and spending over time.',
+            )}
           </p>
         )}
       </Panel>
       {bills && <BillsPanel bills={bills} />}
       <Panel
-        title="Category breakdown"
+        title={t('Category breakdown')}
         subtitle="Spending only. Savings transfers are tracked separately."
       >
         <DataTable
-          caption="Category breakdown"
+          caption={t('Category breakdown')}
           headers={[
             'Category',
             'Planned',

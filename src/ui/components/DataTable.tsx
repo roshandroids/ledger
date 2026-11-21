@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { motion, useReducedMotion } from 'motion/react'
 import type { ReactNode } from 'react'
 
@@ -19,14 +20,15 @@ export function DataTable({
   empty,
   emptyIllustration,
 }: Props) {
+  const t = useTranslation()
   const reduced = useReducedMotion()
   if (rows.length === 0) {
-    return <EmptyState illustration={emptyIllustration}>{empty}</EmptyState>
+    return <EmptyState illustration={emptyIllustration}>{t(empty)}</EmptyState>
   }
   return (
     <div className="md:overflow-x-auto">
-      <table className="block w-full text-left text-sm md:table">
-        <caption className="sr-only">{caption}</caption>
+      <table className="block w-full text-start text-sm md:table">
+        <caption className="sr-only">{t(caption)}</caption>
         <thead className="max-md:sr-only">
           <tr>
             {headers.map((h, i) => (
@@ -35,7 +37,7 @@ export function DataTable({
                 scope="col"
                 className="text-muted px-2 py-2 text-xs font-bold"
               >
-                {h || <span className="sr-only">Actions</span>}
+                {h ? t(h) : <span className="sr-only">{t('Actions')}</span>}
               </th>
             ))}
           </tr>
@@ -52,7 +54,7 @@ export function DataTable({
               {r.cells.map((c, i) => (
                 <td
                   key={i}
-                  data-label={headers[i]}
+                  data-label={t(headers[i] ?? '')}
                   className="px-2 py-1 before:text-muted before:text-xs before:font-bold before:content-[attr(data-label)] max-md:flex max-md:items-center max-md:justify-between max-md:gap-3 max-md:[&>*]:max-w-[62%] md:table-cell md:py-2 md:before:hidden"
                 >
                   {c}

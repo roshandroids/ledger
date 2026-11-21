@@ -1,23 +1,23 @@
 import type { CategoryRow } from '../domain'
 
-const monthFormat = new Intl.DateTimeFormat('en-CA', {
-  month: 'short',
-  year: '2-digit',
-  timeZone: 'UTC',
-})
+import { displayLocale } from './preferences'
 
 export const monthLabel = (month: string) =>
-  monthFormat.format(new Date(month + '-01T00:00:00Z'))
+  new Intl.DateTimeFormat(displayLocale(), {
+    month: 'short',
+    year: '2-digit',
+    timeZone: 'UTC',
+  }).format(new Date(month + '-01T00:00:00Z'))
 
 export const palette = [
-  '#327b70',
-  '#6692d5',
-  '#e5aa63',
-  '#796bb2',
-  '#4291af',
-  '#cc8292',
-  '#a6b85e',
-  '#8d9dae',
+  '#079777',
+  '#8153e6',
+  '#e88b36',
+  '#cd5596',
+  '#349ec9',
+  '#ed626a',
+  '#87a527',
+  '#8e82aa',
 ]
 
 /** Top 7 planned categories plus an "All other categories" slice; zero-plan rows are dropped. */

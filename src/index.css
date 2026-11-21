@@ -3,56 +3,143 @@
 
 :root {
   color-scheme: light;
-  --ink: #172337;
-  --muted: #526276;
-  --nav: #121d32;
-  --nav-hover: #24354e;
-  --nav-active: #263750;
-  --surface: #f3f6f9;
+  --ink: #211740;
+  --muted: #594e75;
+  --nav: #261450;
+  --nav-hover: #3b236c;
+  --nav-active: #4b2b82;
+  --surface: #f3efff;
   --card: #ffffff;
-  --line: #dce4ec;
-  --mint: #a8f2d2;
-  --teal: #10735b;
-  --plan: #7dd9bc;
-  --actual: #5774c9;
-  --negative: #a53036;
+  --line: #ddd3f4;
+  --mint: #9dffcf;
+  --teal: #087052;
+  --plan: #11aa88;
+  --actual: #6a3cd9;
+  --negative: #ac2456;
 }
 
 /* Dark: explicit choice, or system preference when the user has not chosen. */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --ink: #e6edf7;
-  --muted: #9fb0c5;
-  --nav: #0a1220;
-  --nav-hover: #18253a;
-  --nav-active: #1d2d46;
-  --surface: #0e1626;
-  --card: #162135;
-  --line: #2a3a52;
-  --actual: #8aa5ee;
-  --negative: #f08a8f;
+  --ink: #f6eeff;
+  --muted: #bdadd6;
+  --nav: #21123f;
+  --nav-hover: #35205c;
+  --nav-active: #4b2c79;
+  --surface: #140d25;
+  --card: #211735;
+  --line: #483866;
+  --actual: #bc9cff;
+  --negative: #ff91b5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --ink: #e6edf7;
-    --muted: #9fb0c5;
-    --nav: #0a1220;
-    --nav-hover: #18253a;
-    --nav-active: #1d2d46;
-    --surface: #0e1626;
-    --card: #162135;
-    --line: #2a3a52;
-    --actual: #8aa5ee;
-    --negative: #f08a8f;
+    --ink: #f6eeff;
+    --muted: #bdadd6;
+    --nav: #21123f;
+    --nav-hover: #35205c;
+    --nav-active: #4b2c79;
+    --surface: #140d25;
+    --card: #211735;
+    --line: #483866;
+    --actual: #bc9cff;
+    --negative: #ff91b5;
   }
 }
 
+:root[data-palette='ocean'] {
+  --palette-hue: #087fa8;
+  --palette-action: #006584;
+  --palette-highlight: #89f4ff;
+}
+:root[data-palette='sunset'] {
+  --palette-hue: #c64063;
+  --palette-action: #a52b52;
+  --palette-highlight: #ffd1a5;
+}
+:root[data-palette='forest'] {
+  --palette-hue: #269363;
+  --palette-action: #1d6744;
+  --palette-highlight: #cbf58c;
+}
+:root[data-palette='amber'] {
+  --palette-hue: #b87016;
+  --palette-action: #864807;
+  --palette-highlight: #ffe29a;
+}
+:root[data-palette='rose'] {
+  --palette-hue: #ba347e;
+  --palette-action: #92225e;
+  --palette-highlight: #ffc2e7;
+}
+:root[data-palette='cobalt'] {
+  --palette-hue: #326ddc;
+  --palette-action: #2455ad;
+  --palette-highlight: #bcdfff;
+}
+:root[data-palette='graphite'] {
+  --palette-hue: #697993;
+  --palette-action: #465773;
+  --palette-highlight: #e3efff;
+}
+:root[data-palette]:not([data-palette='violet']) {
+  --nav: color-mix(in srgb, var(--palette-hue) 38%, #101222);
+  --nav-hover: color-mix(in srgb, var(--palette-hue) 55%, #101222);
+  --nav-active: color-mix(in srgb, var(--palette-hue) 60%, #101222);
+  --surface: light-dark(
+    color-mix(in srgb, var(--palette-hue) 9%, white),
+    color-mix(in srgb, var(--palette-hue) 12%, #10101b)
+  );
+  --card: light-dark(
+    white,
+    color-mix(in srgb, var(--palette-hue) 19%, #151525)
+  );
+  --line: light-dark(
+    color-mix(in srgb, var(--palette-hue) 24%, white),
+    color-mix(in srgb, var(--palette-hue) 35%, #363445)
+  );
+  --mint: var(--palette-highlight);
+  --actual: light-dark(
+    var(--palette-action),
+    color-mix(in srgb, var(--palette-hue) 60%, white)
+  );
+}
+:root[data-font='system'] {
+  --ledger-font: system-ui, sans-serif;
+}
+:root[data-font='serif'] {
+  --ledger-font: Georgia, 'Times New Roman', serif;
+}
+:root[data-font='mono'] {
+  --ledger-font: ui-monospace, 'Courier New', monospace;
+}
+
+:root[data-font='humanist'] {
+  --ledger-font: 'Trebuchet MS', 'Segoe UI', sans-serif;
+}
+:root[data-font='rounded'] {
+  --ledger-font: ui-rounded, 'Arial Rounded MT Bold', 'Segoe UI', sans-serif;
+}
+:root[data-font='editorial'] {
+  --ledger-font: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+}
+[dir='rtl'] .rtl-flip {
+  transform: scaleX(-1);
+}
+
 @theme inline {
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(
+    --ledger-font,
+    'Inter Variable',
+    ui-sans-serif,
+    system-ui,
+    sans-serif
+  );
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-nav: var(--nav);
+  --color-action: var(--palette-action, #6334cc);
   --color-nav-hover: var(--nav-hover);
   --color-nav-active: var(--nav-active);
   --color-surface: var(--surface);
@@ -89,7 +176,7 @@ dialog::backdrop {
 }
 
 :focus-visible {
-  outline: 3px solid #4274d8;
+  outline: 3px solid #9471f0;
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {

@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useReducedMotion } from 'motion/react'
 import {
   Bar,
@@ -18,6 +19,7 @@ export interface FlowRow {
 }
 
 export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
+  const t = useTranslation()
   const reduced = useReducedMotion()
   const data = rows.map((r) => ({
     name: r.name,
@@ -59,12 +61,14 @@ export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
             <Legend />
             <Bar
               dataKey="Plan"
+              name={t('Planned')}
               fill="var(--plan)"
               radius={4}
               isAnimationActive={!reduced}
             />
             <Bar
               dataKey="Actual"
+              name={t('Actual')}
               fill="var(--actual)"
               radius={4}
               isAnimationActive={!reduced}
@@ -77,8 +81,8 @@ export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
         <thead>
           <tr>
             <th scope="col">Measure</th>
-            <th scope="col">Plan</th>
-            <th scope="col">Actual</th>
+            <th scope="col">{t('Planned')}</th>
+            <th scope="col">{t('Actual')}</th>
           </tr>
         </thead>
         <tbody>

@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useMemo, useState } from 'react'
 import {
   accountBalances,
@@ -37,6 +38,7 @@ const monthLabel = (m: string) => {
 }
 
 export function AccountsPage() {
+  const t = useTranslation()
   const state = useLedger((s) => s.state)
   const { updateRow, addRow, removeRow, setSetting } = useLedger.getState()
   const [blocked, setBlocked] = useState(false)
@@ -138,7 +140,7 @@ export function AccountsPage() {
         )}
       </Panel>
       <Panel
-        title="Accounts"
+        title={t('Accounts')}
         subtitle="Income and expenses count toward the account on each transaction (unassigned ones use the first account). Savings goals are earmarks and do not move account balances; use a transfer to move money."
         action={
           <AddButton ref={accountAdd} onClick={onAddAccount}>
@@ -148,7 +150,7 @@ export function AccountsPage() {
       >
         <div ref={accountTable}>
           <DataTable
-            caption="Accounts"
+            caption={t('Accounts')}
             headers={[
               'Name',
               'Kind',

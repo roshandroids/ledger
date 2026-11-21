@@ -1,17 +1,10 @@
+import { useTranslation } from '../i18n'
+import { displayLocale } from '../preferences'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { panelClass, triggerClass } from './popover'
 
-const names = Array.from({ length: 12 }, (_, i) =>
-  new Intl.DateTimeFormat('en-CA', { month: 'short' }).format(
-    new Date(2000, i, 1),
-  ),
-)
-const long = new Intl.DateTimeFormat('en-CA', {
-  month: 'long',
-  year: 'numeric',
-})
 const MONTH = /^(\d{4})-(\d{2})$/
 
 function parse(value: string) {
@@ -26,6 +19,11 @@ function Grid({
   value: ReturnType<typeof parse>
   onPick(month: string): void
 }) {
+  const t = useTranslation()
+  const short = new Intl.DateTimeFormat(displayLocale(), { month: 'short' })
+  const names = Array.from({ length: 12 }, (_, i) =>
+    short.format(new Date(2000, i, 1)),
+  )
   const [year, setYear] = useState(
     () => value?.year ?? new Date().getFullYear(),
   )
@@ -35,20 +33,20 @@ function Grid({
       <div className="mb-2 flex items-center justify-between">
         <button
           type="button"
-          aria-label="Previous year"
+          aria-label={t('Previous year')}
           className={nav}
           onClick={() => setYear(year - 1)}
         >
-          <ChevronLeft size={16} aria-hidden="true" />
+          <ChevronLeft className="rtl-flip" size={16} aria-hidden="true" />
         </button>
         <strong aria-live="polite">{year}</strong>
         <button
           type="button"
-          aria-label="Next year"
+          aria-label={t('Next year')}
           className={nav}
           onClick={() => setYear(year + 1)}
         >
-          <ChevronRight size={16} aria-hidden="true" />
+          <ChevronRight className="rtl-flip" size={16} aria-hidden="true" />
         </button>
       </div>
       <div className="grid grid-cols-3 gap-1">
@@ -82,10 +80,15 @@ export function MonthPicker({
   value: string
   onChange(month: string): void
 }) {
+  const t = useTranslation()
+  const long = new Intl.DateTimeFormat(displayLocale(), {
+    month: 'long',
+    year: 'numeric',
+  })
   const parsed = parse(value)
   const shown = parsed
     ? long.format(new Date(parsed.year, parsed.month - 1, 1))
-    : value || 'Pick a month'
+    : value || t('Pick a month')
   return (
     <Popover>
       <PopoverButton aria-label={`${label}, ${shown}`} className={triggerClass}>

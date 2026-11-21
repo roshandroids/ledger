@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useState } from 'react'
 import { currencies, frequencies, monthly } from '../../domain'
 import type { Cadence } from '../../domain'
@@ -18,6 +19,7 @@ import { useRowFocus } from '../useRowFocus'
 const cadences = Object.keys(frequencies) as Cadence[]
 
 export function BudgetPage() {
+  const t = useTranslation()
   const state = useLedger((s) => s.state)
   const { setSetting, addRow, updateRow, removeRow, moveBudgetToRecurring } =
     useLedger.getState()
@@ -36,31 +38,31 @@ export function BudgetPage() {
   return (
     <>
       <Panel
-        title="Pay and monthly target"
+        title={t('Pay and monthly target')}
         subtitle="Use your pay after tax. Monthly plans average recurring payments across the year."
       >
         <div className="grid gap-4 md:grid-cols-3">
           <label className="grid gap-1 text-sm">
-            Take-home pay per payment
+            {t('Take-home pay per payment')}
             <MoneyInput
-              label="Take-home pay per payment"
+              label={t('Take-home pay per payment')}
               value={state.pay}
               onChange={(v) => setSetting('pay', v)}
             />
           </label>
           <label className="grid gap-1 text-sm">
-            Pay frequency
+            {t('Pay frequency')}
             <Select
-              label="Pay frequency"
+              label={t('Pay frequency')}
               value={state.cadence}
               options={cadences.filter((c) => c !== 'One-time')}
               onChange={(v) => setSetting('cadence', v as Cadence)}
             />
           </label>
           <label className="grid gap-1 text-sm">
-            Monthly savings target
+            {t('Monthly savings target')}
             <MoneyInput
-              label="Monthly savings target"
+              label={t('Monthly savings target')}
               value={state.target}
               onChange={(v) => setSetting('target', v)}
             />
@@ -88,7 +90,7 @@ export function BudgetPage() {
         </label>
       </Panel>
       <Panel
-        title="Budget items"
+        title={t('Budget items')}
         subtitle="Use any category name. One-time costs belong to the month you select for that row."
         action={
           <AddButton ref={addRef} onClick={onAdd}>
@@ -98,7 +100,7 @@ export function BudgetPage() {
       >
         <div ref={tableRef}>
           <DataTable
-            caption="Budget items"
+            caption={t('Budget items')}
             headers={[
               'Item',
               'Category',

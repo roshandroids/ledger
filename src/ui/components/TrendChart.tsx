@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useReducedMotion } from 'motion/react'
 import {
   Bar,
@@ -28,6 +29,7 @@ export function TrendChart({
   series: TrendSeries[]
   variant?: 'bar' | 'line'
 }) {
+  const t = useTranslation()
   const reduced = useReducedMotion()
   const Chart = variant === 'line' ? LineChart : BarChart
   return (
@@ -67,6 +69,7 @@ export function TrendChart({
               <Line
                 key={s.key}
                 dataKey={s.key}
+                name={t(s.key)}
                 stroke={s.color}
                 strokeWidth={2.5}
                 dot={{ r: 3, fill: s.color }}
@@ -76,6 +79,7 @@ export function TrendChart({
               <Bar
                 key={s.key}
                 dataKey={s.key}
+                name={t(s.key)}
                 fill={s.color}
                 radius={4}
                 isAnimationActive={!reduced}

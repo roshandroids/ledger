@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { motion } from 'motion/react'
 import { NavLink } from 'react-router'
@@ -12,6 +13,7 @@ export function Sidebar({
   collapsed: boolean
   onToggle(): void
 }) {
+  const t = useTranslation()
   const currency = useLedger((s) => s.state.currency)
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
   return (
@@ -21,7 +23,7 @@ export function Sidebar({
       <div
         className={`hidden items-center md:flex ${collapsed ? 'flex-col gap-3' : 'justify-between gap-2'}`}
       >
-        <NavLink to="/overview" aria-label="Ledger overview">
+        <NavLink to="/overview" aria-label={t('Ledger overview')}>
           <img
             src={
               collapsed
@@ -37,8 +39,8 @@ export function Sidebar({
           onClick={onToggle}
           aria-expanded={!collapsed}
           aria-controls="workspace-navigation"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={t(collapsed ? 'Expand sidebar' : 'Collapse sidebar')}
+          title={t(collapsed ? 'Expand sidebar' : 'Collapse sidebar')}
           className="hover:bg-nav-hover grid size-9 shrink-0 place-items-center rounded-lg text-slate-300"
         >
           <ToggleIcon size={19} aria-hidden="true" />
@@ -46,16 +48,16 @@ export function Sidebar({
       </div>
       <nav
         id="workspace-navigation"
-        aria-label="Budget workspace"
+        aria-label={t('Budget workspace')}
         className={`grid grid-cols-7 pb-[env(safe-area-inset-bottom)] md:grid-cols-1 md:gap-2 md:pb-0 ${collapsed ? 'md:mt-5' : 'md:mt-10'}`}
       >
         {pages.map((p) => (
           <NavLink
             key={p.path}
-            aria-label={p.nav}
-            title={collapsed ? p.nav : undefined}
+            aria-label={t(p.nav)}
+            title={collapsed ? t(p.nav) : undefined}
             to={`/${p.path}`}
-            className={`aria-[current=page]:text-mint relative isolate flex flex-col items-center gap-1 px-1 py-2 text-[0.7rem] font-semibold text-slate-300 md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-3 md:text-sm ${collapsed ? 'md:justify-center' : ''}`}
+            className={`aria-[current=page]:text-mint relative isolate flex flex-col items-center gap-1 px-1 py-2 text-[0.65rem] font-semibold text-slate-300 md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-3 md:text-sm ${collapsed ? 'md:justify-center' : ''}`}
           >
             {({ isActive }) => (
               <>
@@ -70,14 +72,16 @@ export function Sidebar({
                 <span
                   className={`max-[600px]:hidden ${collapsed ? 'md:hidden' : 'md:inline'}`}
                 >
-                  {p.nav}
+                  {t(p.nav)}
                 </span>
                 <span aria-hidden="true" className="hidden max-[600px]:inline">
-                  {p.path === 'transactions'
-                    ? 'Trans'
-                    : p.path === 'goals'
-                      ? 'Goals'
-                      : p.nav}
+                  {t(
+                    p.path === 'transactions'
+                      ? 'Trans'
+                      : p.path === 'goals'
+                        ? 'Goals'
+                        : p.nav,
+                  )}
                 </span>
               </>
             )}
@@ -91,7 +95,7 @@ export function Sidebar({
           {currency}
         </strong>
         <span className={collapsed ? 'sr-only' : undefined}>
-          Saved on this device
+          {t('Saved on this device')}
         </span>
       </div>
     </aside>

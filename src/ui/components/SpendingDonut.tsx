@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useReducedMotion } from 'motion/react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { palette } from '../chartData'
@@ -10,11 +11,12 @@ interface Props {
 }
 
 export function SpendingDonut({ rows, total }: Props) {
+  const t = useTranslation()
   const reduced = useReducedMotion()
   if (rows.length === 0) {
     return (
       <p className="text-muted py-6 text-center text-sm">
-        Add budget items to see a breakdown.
+        {t('Add budget items to see a breakdown.')}
       </p>
     )
   }
@@ -52,7 +54,7 @@ export function SpendingDonut({ rows, total }: Props) {
             </PieChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 -z-0 grid place-content-center text-center">
-            <span className="text-muted text-xs">Spending</span>
+            <span className="text-muted text-xs">{t('Spending')}</span>
             <strong>{fmt(total)}</strong>
           </div>
         </div>

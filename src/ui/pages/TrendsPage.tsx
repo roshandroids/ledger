@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useMemo, useState } from 'react'
 import { monthSeries } from '../../domain'
 import { useLedger } from '../../store/useLedger'
@@ -16,6 +17,7 @@ const ranges: [string, string][] = [
 const ALL = ''
 
 export function TrendsPage() {
+  const t = useTranslation()
   const state = useLedger((s) => s.state)
   const [range, setRange] = useState('6')
   const [category, setCategory] = useState(ALL)
@@ -52,7 +54,7 @@ export function TrendsPage() {
   return (
     <>
       <Panel
-        title="Monthly trends"
+        title={t('Monthly trends')}
         subtitle="Actual income, spending and savings for the months ending at the selected month."
         action={
           <div className="w-44">
@@ -104,7 +106,7 @@ export function TrendsPage() {
         </div>
       </Panel>
       <Panel
-        title="Category trend"
+        title={t('Category trend')}
         subtitle="Planned and actual spending for one category."
         action={
           <div className="w-52">

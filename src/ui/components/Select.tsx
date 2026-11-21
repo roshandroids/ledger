@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import {
   Listbox,
   ListboxButton,
@@ -16,14 +17,15 @@ interface Props {
 
 /** Accessible custom dropdown. `label` is the button's aria-label. */
 export function Select({ label, value, options, onChange }: Props) {
+  const t = useTranslation()
   const items = options.map((o) =>
-    typeof o === 'string' ? ([o, o] as const) : o,
+    typeof o === 'string' ? ([o, t(o)] as const) : o,
   )
   const current = items.find(([v]) => v === value)
   return (
     <Listbox value={value} onChange={onChange}>
       <ListboxButton
-        aria-label={`${label}, ${current?.[1] ?? value}`}
+        aria-label={`${t(label)}, ${current?.[1] ?? value}`}
         className={triggerClass}
       >
         <span className="truncate">{current?.[1] ?? value}</span>

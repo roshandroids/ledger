@@ -1,3 +1,4 @@
+import { useTranslation } from '../i18n'
 import { useEffect, useRef, type ReactNode } from 'react'
 
 interface Props {
@@ -20,6 +21,7 @@ export function ConfirmDialog({
   onConfirm,
   onClose,
 }: Props) {
+  const t = useTranslation()
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const d = ref.current
@@ -49,7 +51,7 @@ export function ConfirmDialog({
           onClick={onClose}
           className="border-line rounded-lg border px-3 py-2 text-sm font-semibold"
         >
-          {onConfirm ? 'Cancel' : 'OK'}
+          {onConfirm ? t('Cancel') : 'OK'}
         </button>
         {onConfirm && (
           <button
