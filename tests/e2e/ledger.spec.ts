@@ -21,6 +21,32 @@ test('first load shows the sample banner; Start blank clears it and keeps the mo
   await expect(page.getByText('Sample budget')).toBeHidden()
 })
 
+test('category suggestions are compact and searchable and keep custom names', async ({
+  page,
+}) => {
+  await page.goto('/budget')
+  await page.getByRole('button', { name: 'Start blank' }).click()
+  await page.getByRole('button', { name: '+ Add item' }).click()
+
+  const category = page.getByRole('combobox', { name: 'Category', exact: true })
+  await page.getByRole('button', { name: 'Show category suggestions' }).click()
+  const list = page.getByRole('listbox')
+  await expect(list).toBeVisible()
+  expect((await list.boundingBox())!.height).toBeLessThanOrEqual(192)
+
+  await category.fill('bank')
+  await expect(list.getByRole('option', { name: 'Bank fees' })).toBeVisible()
+  await expect(list.getByRole('option', { name: 'Housing' })).toHaveCount(0)
+  await category.press('ArrowDown')
+  await category.press('Enter')
+  await expect(category).toHaveValue('Bank fees')
+
+  await category.fill('Vehicle upkeep')
+  await category.press('Tab')
+  await page.reload()
+  await expect(category).toHaveValue('Vehicle upkeep')
+})
+
 test('budget item, transaction, goal flows persist across reload', async ({
   page,
 }) => {

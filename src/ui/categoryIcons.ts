@@ -50,6 +50,7 @@ const icons: Record<string, LucideIcon> = {
   pets: PawPrint,
   personal: User,
   'debt payments': CreditCard,
+  'bank fees': Receipt,
   'taxes & fees': Receipt,
   savings: PiggyBank,
   investments: TrendingUp,

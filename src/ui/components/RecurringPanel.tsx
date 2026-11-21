@@ -8,6 +8,7 @@ import { MoneyInput } from './MoneyInput'
 import { Panel } from './Panel'
 import { Select } from './Select'
 import { TextInput } from './TextInput'
+import { CategoryInput } from './CategoryInput'
 import { useRowFocus } from '../useRowFocus'
 
 export function RecurringPanel() {
@@ -17,6 +18,7 @@ export function RecurringPanel() {
     () => addRow('recurring'),
     (i) => removeRow('recurring', i),
   )
+  const categories = state.budget.map((b) => b.category)
   const goals: [string, string][] = state.goals.map((g) => [
     g.id === 'general' ? '' : g.id,
     g.name || 'Unnamed goal',
@@ -62,9 +64,9 @@ export function RecurringPanel() {
                   updateRow('recurring', i, { type: v as Recurring['type'] })
                 }
               />,
-              <TextInput
+              <CategoryInput
                 label="Bill category"
-                list="category-list"
+                extra={categories}
                 value={r.category}
                 onChange={(category) => updateRow('recurring', i, { category })}
               />,

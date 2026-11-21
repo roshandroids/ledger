@@ -21,6 +21,7 @@ export const defaultCategories = [
   'Pets',
   'Personal',
   'Debt payments',
+  'Bank fees',
   'Taxes & fees',
   'Savings',
   'Investments',

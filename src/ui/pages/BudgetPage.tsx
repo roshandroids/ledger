@@ -8,7 +8,6 @@ import { LockPanel } from '../components/LockPanel'
 import { RecurringPanel } from '../components/RecurringPanel'
 import { BackupPanel } from '../components/BackupPanel'
 import { CategoryInput } from '../components/CategoryInput'
-import { CategoryDatalist } from '../components/CategoryDatalist'
 import { MonthPicker } from '../components/MonthPicker'
 import { DataTable } from '../components/DataTable'
 import { MoneyInput } from '../components/MoneyInput'
@@ -23,6 +22,7 @@ const cadences = Object.keys(frequencies) as Cadence[]
 export function BudgetPage() {
   const state = useLedger((s) => s.state)
   const { setSetting, addRow, updateRow, removeRow } = useLedger.getState()
+  const categories = state.budget.map((b) => b.category)
   const rows = useMemo(() => report(state).budget, [state])
   const rowFocus = useRowFocus(
     () => addRow('budget'),
@@ -92,7 +92,6 @@ export function BudgetPage() {
           </AddButton>
         }
       >
-        <CategoryDatalist extra={state.budget.map((b) => b.category)} />
         <div ref={tableRef}>
           <DataTable
             caption="Budget items"
@@ -117,6 +116,7 @@ export function BudgetPage() {
                   onChange={(name) => updateRow('budget', i, { name })}
                 />,
                 <CategoryInput
+                  extra={categories}
                   value={r.category}
                   onChange={(category) => updateRow('budget', i, { category })}
                 />,

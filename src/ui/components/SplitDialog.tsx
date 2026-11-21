@@ -4,15 +4,17 @@ import type { Split, Transaction } from '../../domain'
 import { fmt } from '../format'
 import { ConfirmDialog } from './ConfirmDialog'
 import { MoneyInput } from './MoneyInput'
-import { TextInput } from './TextInput'
+import { CategoryInput } from './CategoryInput'
 
 /** Files part of a transaction under other categories; the remainder keeps the row's category. */
 export function SplitDialog({
   tx,
+  categories,
   onSave,
   onClose,
 }: {
   tx: Transaction
+  categories: readonly string[]
   onSave(splits: Split[]): void
   onClose(): void
 }) {
@@ -36,9 +38,9 @@ export function SplitDialog({
       <div className="grid gap-2">
         {rows.map((r, i) => (
           <div key={i} className="flex items-center gap-2">
-            <TextInput
+            <CategoryInput
               label="Split category"
-              list="category-list"
+              extra={categories}
               value={r.category}
               onChange={(category) => edit(i, { category })}
             />

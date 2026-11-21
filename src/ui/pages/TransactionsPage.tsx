@@ -5,7 +5,6 @@ import type { TransactionType } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
 import { CategoryInput } from '../components/CategoryInput'
-import { CategoryDatalist } from '../components/CategoryDatalist'
 import { DatePicker } from '../components/DatePicker'
 import { DataTable } from '../components/DataTable'
 import { ImportPanel } from '../components/ImportPanel'
@@ -67,6 +66,10 @@ export function TransactionsPage() {
     }
     return [...seen.values()].sort((a, b) => a.localeCompare(b, 'en-CA'))
   }, [state.transactions])
+  const categorySuggestions = [
+    ...state.budget.map((b) => b.category),
+    ...categories,
+  ]
   // A new blank row would be hidden by an active filter or sort, so show everything first.
   const rowFocus = useRowFocus(
     () => {
@@ -105,7 +108,6 @@ export function TransactionsPage() {
           </AddButton>
         }
       >
-        <CategoryDatalist extra={state.budget.map((b) => b.category)} />
         {state.transactions.length > 0 && (
           <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <TextInput
@@ -204,10 +206,9 @@ export function TransactionsPage() {
               <>
                 <span className="text-muted">{selected.length} selected</span>
                 <div className="w-40">
-                  <TextInput
+                  <CategoryInput
                     label="Category for selected"
-                    placeholder="Category"
-                    list="category-list"
+                    extra={categorySuggestions}
                     value={bulkCategory}
                     onChange={setBulkCategory}
                   />
@@ -288,6 +289,7 @@ export function TransactionsPage() {
                   }
                 />,
                 <CategoryInput
+                  extra={categorySuggestions}
                   value={t.category}
                   onChange={(category) =>
                     updateRow('transactions', i, { category })
@@ -356,6 +358,7 @@ export function TransactionsPage() {
       {splitting !== null && state.transactions[splitting] && (
         <SplitDialog
           tx={state.transactions[splitting]}
+          categories={categorySuggestions}
           onSave={(splits) => updateRow('transactions', splitting, { splits })}
           onClose={() => setSplitting(null)}
         />
