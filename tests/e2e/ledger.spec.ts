@@ -126,17 +126,20 @@ test('old #budget bookmarks redirect', async ({ page }) => {
   await expect(page).toHaveURL(/\/budget$/)
 })
 
-for (const path of ['overview', 'budget', 'transactions', 'goals']) {
-  test(`axe: no serious violations on /${path}`, async ({ page }) => {
-    // Reduced motion avoids measuring contrast mid-fade.
-    await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto('/' + path)
-    await page.getByRole('heading', { level: 1 }).waitFor()
-    const { violations } = await new AxeBuilder({ page }).analyze()
-    expect(
-      violations.filter(
-        (v) => v.impact === 'serious' || v.impact === 'critical',
-      ),
-    ).toEqual([])
-  })
-}
+for (const scheme of ['light', 'dark'] as const)
+  for (const path of ['overview', 'budget', 'transactions', 'goals']) {
+    test(`axe (${scheme}): no serious violations on /${path}`, async ({
+      page,
+    }) => {
+      // Reduced motion avoids measuring contrast mid-fade.
+      await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: scheme })
+      await page.goto('/' + path)
+      await page.getByRole('heading', { level: 1 }).waitFor()
+      const { violations } = await new AxeBuilder({ page }).analyze()
+      expect(
+        violations.filter(
+          (v) => v.impact === 'serious' || v.impact === 'critical',
+        ),
+      ).toEqual([])
+    })
+  }

@@ -168,13 +168,13 @@ Estimated total: about 12-17 working days for one developer.
 
 Backend and accounts, multi-currency, CSV or bank import, recurring-transaction automation, dark mode (add after the port if wanted).
 
-## 8. Open decisions
+## 8. Decisions (resolved)
 
-1. React confirmed, or Svelte instead?
-2. Keep Excel formulas live (current behavior, more work) or export values only?
-3. Is the `#overview` URL scheme worth keeping, or move to clean paths (`/budget`)?
-4. Add a JSON backup/restore (import/export) feature as part of this, since data is only on one device?
+1. **React**: chosen (animations and charts).
+2. **Excel formulas**: kept live, generated from a named-reference map and checked against `report()`.
+3. **URLs**: clean paths (`/budget`); old `/#budget` links redirect.
+4. **Backup/restore**: added as JSON download and restore, plus optional Google Drive saving (browser-only, no backend).
 
 ## 9. Status
 
-Phases 0-9 done except deployment, Lighthouse/meta polish, dark-mode axe check and pushing to GitHub. Two Phase-2 decisions: floats kept (not cents), live Excel formulas kept. Added beyond plan: theming, category icons, JSON backup/restore, Google Drive saving.
+Phases 0-9 done and pushed; CI (lint, typecheck, unit, build, e2e with axe in light and dark) is green. Remaining: hosting, a Lighthouse pass, and a LibreOffice recalculation check on a machine where it runs. Two Phase-2 decisions: floats kept (not cents), live Excel formulas kept. Added beyond plan: theming, category icons, JSON backup/restore, Google Drive saving.
