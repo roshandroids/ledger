@@ -41,4 +41,5 @@ The first save creates `Ledger-<month>.xlsx` (or the backup JSON) in Drive; late
 ## End-to-end tests and deploy
 
 - `npm run e2e` builds, serves a preview and runs Playwright (locally with your installed Chrome; CI installs Chromium). It covers the main flows, the v1 → v2 data migration, the `.xlsx` download and axe accessibility checks on every page (light theme).
+- **Netlify:** `netlify.toml` sets the build, SPA fallback, cache and security headers. In Netlify choose *Add new site → Import from Git* → `roshandroids/ledger` (settings are picked up from the file). To enable Drive saving add `VITE_GOOGLE_CLIENT_ID` under *Site configuration → Environment variables*, then add the site's URL to the OAuth client's authorized JavaScript origins.
 - Deploy `dist/` to any static host. Client-side routes need an SPA fallback: `public/_redirects` covers Netlify and Cloudflare Pages; on Vercel add a rewrite of `/(.*)` to `/index.html`.
