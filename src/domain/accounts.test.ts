@@ -5,6 +5,7 @@ import {
   netWorth,
   netWorthSeries,
   payoff,
+  payoffPlan,
 } from './accounts'
 import { report } from './report'
 import { starter } from './starter'
@@ -144,5 +145,58 @@ describe('payoff', () => {
     expect(payoff(0, 5, 100)).toEqual({ months: 0, interest: 0 })
     expect(payoff(1000, 24, 20)).toBeNull() // interest is 20/month
     expect(payoff(1000, 5, 0)).toBeNull()
+  })
+})
+
+describe('payoffPlan', () => {
+  const debts = [
+    { id: 'small', owed: 500, rate: 5, payment: 20 },
+    { id: 'big', owed: 3000, rate: 24, payment: 100 },
+  ]
+  it('matches the single-debt payoff when there is one debt and no extra', () => {
+    const one = payoffPlan(
+      [{ id: 'x', owed: 1200, rate: 12, payment: 200 }],
+      0,
+      'snowball',
+    )!
+    expect(one).toEqual({ months: 7, interest: 43.85, order: ['x'] })
+  })
+  it('snowball clears the smaller balance first, avalanche the higher rate', () => {
+    const s = payoffPlan(debts, 150, 'snowball')!
+    const a = payoffPlan(debts, 150, 'avalanche')!
+    expect(s.order).toEqual(['small', 'big'])
+    expect(a.order).toEqual(['big', 'small'])
+    expect(a.interest).toBeLessThan(s.interest)
+  })
+  it('rolling payments and extra beat paying each debt alone', () => {
+    const alone = debts.map((d) => payoff(d.owed, d.rate, d.payment)!)
+    const plan = payoffPlan(debts, 0, 'avalanche')!
+    expect(plan.interest).toBeLessThan(
+      alone.reduce((s, p) => s + p.interest, 0),
+    )
+    expect(plan.months).toBeLessThanOrEqual(
+      Math.max(...alone.map((p) => p.months)),
+    )
+  })
+  it('handles nothing owed and impossible budgets', () => {
+    expect(payoffPlan([], 50, 'snowball')).toEqual({
+      months: 0,
+      interest: 0,
+      order: [],
+    })
+    expect(
+      payoffPlan(
+        [{ id: 'x', owed: 1000, rate: 24, payment: 0 }],
+        0,
+        'snowball',
+      ),
+    ).toBeNull()
+    expect(
+      payoffPlan(
+        [{ id: 'x', owed: 1000, rate: 24, payment: 20 }],
+        0,
+        'avalanche',
+      ),
+    ).toBeNull()
   })
 })

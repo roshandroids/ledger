@@ -116,3 +116,65 @@ export function payoff(
   }
   return null
 }
+
+export type Strategy = 'snowball' | 'avalanche'
+export interface DebtInput {
+  id: string
+  owed: number
+  /** Annual rate in percent. */
+  rate: number
+  /** Planned monthly payment; freed up when the debt is cleared. */
+  payment: number
+}
+
+/**
+ * Pays every debt's planned payment each month, adds `extra`, and sends all
+ * money left after the minimums to one target debt: smallest balance first
+ * (snowball) or highest rate first (avalanche). A cleared debt's payment rolls
+ * into the target. `null` when the total budget never clears everything.
+ */
+export function payoffPlan(
+  debts: DebtInput[],
+  extra: number,
+  strategy: Strategy,
+): { months: number; interest: number; order: string[] } | null {
+  const live = debts
+    .filter((d) => d.owed > 0)
+    .map((d) => ({ ...d, balance: d.owed }))
+  if (!live.length) return { months: 0, interest: 0, order: [] }
+  const budget = live.reduce((s, d) => s + (d.payment > 0 ? d.payment : 0), 0)
+  const total = budget + (extra > 0 ? extra : 0)
+  if (!(total > 0)) return null
+  let interest = 0
+  const order: string[] = []
+  for (let months = 1; months <= MAX_MONTHS; months++) {
+    const open = live.filter((d) => d.balance > 0)
+    for (const d of open) {
+      const charge = round2((d.balance * (d.rate || 0)) / 1200)
+      d.balance = round2(d.balance + charge)
+      interest = round2(interest + charge)
+    }
+    let pool = total
+    for (const d of open) {
+      const pay = Math.min(d.payment > 0 ? d.payment : 0, d.balance, pool)
+      d.balance = round2(d.balance - pay)
+      pool = round2(pool - pay)
+    }
+    const target = () =>
+      live
+        .filter((d) => d.balance > 0)
+        .sort((a, b) =>
+          strategy === 'snowball'
+            ? a.balance - b.balance
+            : b.rate - a.rate || a.balance - b.balance,
+        )[0]
+    for (let t = target(); t && pool > 0; t = target()) {
+      const pay = Math.min(t.balance, pool)
+      t.balance = round2(t.balance - pay)
+      pool = round2(pool - pay)
+    }
+    for (const d of open) if (d.balance <= 0) order.push(d.id)
+    if (live.every((d) => d.balance <= 0)) return { months, interest, order }
+  }
+  return null
+}

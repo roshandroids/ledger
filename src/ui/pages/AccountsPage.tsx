@@ -7,7 +7,9 @@ import {
   netWorth,
   netWorthSeries,
   payoff,
+  payoffPlan,
 } from '../../domain'
+import type { Strategy } from '../../domain'
 import type { AccountKind } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
@@ -36,6 +38,7 @@ export function AccountsPage() {
   const state = useLedger((s) => s.state)
   const { updateRow, addRow, removeRow } = useLedger.getState()
   const [blocked, setBlocked] = useState(false)
+  const [extra, setExtra] = useState('')
   const {
     tableRef: accountTable,
     addRef: accountAdd,
@@ -291,6 +294,18 @@ export function AccountsPage() {
               }
             })}
           />
+          <Strategies
+            debts={debts.map(({ account: a, owed }) => ({
+              id: a.id,
+              name: a.name || 'Unnamed account',
+              owed: owed ?? 0,
+              rate: Number(a.rate) || 0,
+              payment: Number(a.payment) || 0,
+            }))}
+            month={state.month}
+            extra={extra}
+            onExtra={setExtra}
+          />
         </Panel>
       )}
       {blocked && (
@@ -304,5 +319,85 @@ export function AccountsPage() {
         </ConfirmDialog>
       )}
     </>
+  )
+}
+
+const strategyRows: [string, Strategy][] = [
+  ['Snowball (smallest balance first)', 'snowball'],
+  ['Avalanche (highest rate first)', 'avalanche'],
+]
+
+function Strategies({
+  debts,
+  month,
+  extra,
+  onExtra,
+}: {
+  debts: {
+    id: string
+    name: string
+    owed: number
+    rate: number
+    payment: number
+  }[]
+  month: string
+  extra: string
+  onExtra(v: string): void
+}) {
+  if (!debts.some((d) => d.owed > 0)) return null
+  const more = Number(extra) || 0
+  const alone = debts.map((d) => payoff(d.owed, d.rate, d.payment))
+  const separate = alone.every(Boolean)
+    ? {
+        months: Math.max(...alone.map((p) => p!.months)),
+        interest: alone.reduce((t, p) => t + p!.interest, 0),
+      }
+    : null
+  const name = new Map(debts.map((d) => [d.id, d.name]))
+  const when = (months: number) =>
+    `${monthLabel(addMonths(month, months))} (${months} months)`
+  return (
+    <div className="mt-6">
+      <div className="mb-3 max-w-xs">
+        <MoneyInput
+          label="Extra monthly payment"
+          placeholder="Extra per month"
+          value={extra}
+          onChange={onExtra}
+        />
+      </div>
+      <DataTable
+        caption="Payoff strategies"
+        headers={['Strategy', 'Debt free', 'Interest to pay', 'Payoff order']}
+        empty="No debts."
+        rows={[
+          {
+            key: 'separate',
+            cells: [
+              'Planned payments only',
+              separate
+                ? when(separate.months)
+                : 'A payment does not cover its interest',
+              separate ? fmt(separate.interest) : '—',
+              '—',
+            ],
+          },
+          ...strategyRows.map(([label, strategy]) => {
+            const plan = payoffPlan(debts, more, strategy)
+            return {
+              key: strategy,
+              cells: [
+                label,
+                plan
+                  ? when(plan.months)
+                  : 'Set payments or an extra amount that cover the interest',
+                plan ? fmt(plan.interest) : '—',
+                plan ? plan.order.map((id) => name.get(id)).join(' → ') : '—',
+              ],
+            }
+          }),
+        ]}
+      />
+    </div>
   )
 }

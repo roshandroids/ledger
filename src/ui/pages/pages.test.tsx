@@ -159,7 +159,10 @@ describe('Accounts', () => {
     expect(
       screen.getByRole('heading', { name: 'Debt payoff' }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/months\)/)).toBeInTheDocument()
+    expect(screen.getAllByText(/months\)/).length).toBeGreaterThan(0)
+    expect(
+      screen.getByRole('table', { name: 'Payoff strategies' }),
+    ).toBeInTheDocument()
   })
 
   it('blocks removing an account that still has transfers', async () => {

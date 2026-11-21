@@ -49,7 +49,7 @@ export function TransactionsPage() {
       filterTransactions(state.transactions, filter, (t) =>
         accountOf(state, t),
       ),
-    [state.transactions, state.accounts, filter],
+    [state, filter],
   )
   const categories = useMemo(() => {
     const seen = new Map<string, string>()

@@ -273,3 +273,46 @@ test('works offline after the first visit and installs a service worker', async 
   await expect(page.locator('svg.recharts-surface').first()).toBeVisible()
   await context.setOffline(false)
 })
+
+test('debt strategies compare snowball and avalanche with an extra payment', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'ledger-budget-v2',
+      JSON.stringify({
+        version: 3,
+        state: {
+          month: '2026-03',
+          accounts: [
+            {
+              id: 's',
+              name: 'Card',
+              kind: 'Credit card',
+              opening: 500,
+              rate: 5,
+              payment: 20,
+            },
+            {
+              id: 'b',
+              name: 'Loan',
+              kind: 'Loan',
+              opening: 3000,
+              rate: 24,
+              payment: 100,
+            },
+          ],
+        },
+      }),
+    )
+  })
+  await page.goto('/accounts')
+  await ctl(page, 'Extra monthly payment').fill('150')
+  const table = page.getByRole('table', { name: 'Payoff strategies' })
+  await expect(table.getByRole('row', { name: /Snowball/ })).toContainText(
+    'Card → Loan',
+  )
+  await expect(table.getByRole('row', { name: /Avalanche/ })).toContainText(
+    'Loan → Card',
+  )
+})
