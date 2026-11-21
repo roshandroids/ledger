@@ -38,6 +38,23 @@ describe('ledger store', () => {
     expect(store.getState().state.budget).toHaveLength(0)
   })
 
+  it('bulk-removes and re-categorizes the chosen transactions only', () => {
+    const { store } = memory(starter(false))
+    for (let i = 0; i < 4; i++) store.getState().addRow('transactions')
+    store.getState().recategorize([1, 3], 'Gifts')
+    expect(store.getState().state.transactions.map((t) => t.category)).toEqual([
+      '',
+      'Gifts',
+      '',
+      'Gifts',
+    ])
+    store.getState().removeTransactions([0, 1])
+    expect(store.getState().state.transactions.map((t) => t.category)).toEqual([
+      '',
+      'Gifts',
+    ])
+  })
+
   it('type change to Income or Expense clears the goal', () => {
     const { store } = memory(starter(false))
     store.getState().addRow('transactions')

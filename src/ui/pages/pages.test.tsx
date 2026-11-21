@@ -48,6 +48,50 @@ describe('Budget', () => {
   })
 })
 
+describe('Transaction filters', () => {
+  const seed = () => {
+    const s = useLedger.getState()
+    for (const [category, amount] of [
+      ['Food', 20],
+      ['Fun', 5],
+      ['Food', 40],
+    ] as const) {
+      s.addRow('transactions')
+      const i = useLedger.getState().state.transactions.length - 1
+      s.updateRow('transactions', i, { category, amount, date: '2026-03-02' })
+    }
+  }
+
+  it('filters from the URL and clears', async () => {
+    seed()
+    at('/transactions?q=food')
+    expect(screen.getByText('Showing 2 of 3')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+    expect(screen.getByText('Showing 3 of 3')).toBeInTheDocument()
+  })
+
+  it('bulk re-categorizes and deletes the selected rows', async () => {
+    seed()
+    at('/transactions?sort=category')
+    const boxes = screen.getAllByLabelText('Select transaction')
+    await userEvent.click(boxes[0])
+    await userEvent.click(boxes[1])
+    await userEvent.type(
+      screen.getByLabelText('Category for selected'),
+      'Meals',
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Set category' }))
+    expect(
+      useLedger.getState().state.transactions.map((t) => t.category),
+    ).toEqual(['Meals', 'Fun', 'Meals'])
+    await userEvent.click(screen.getAllByLabelText('Select transaction')[0])
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Delete selected' }),
+    )
+    expect(useLedger.getState().state.transactions).toHaveLength(2)
+  })
+})
+
 describe('Transactions', () => {
   it('shows the goal select only for goal-related types', async () => {
     at('/transactions')

@@ -170,6 +170,7 @@ Status: restore from Drive is done; the rest needs the live site, Google Cloud c
 - Done when the live site passes the e2e smoke test and a Drive save then restore round-trips.
 
 ### 10.1 Transaction search, filter, sort (1-2 days)
+Status: done. Notes already existed (`notes`), so no schema bump. Amount sort puts invalid rows last; filters are in the URL; adding a row clears filters so the blank row is visible.
 - Text search (name, category, note), category, type, goal, date range, amount range; sortable columns.
 - Filters live in the URL query string so views are linkable; show "N of M" and a clear-all button.
 - Bulk select with delete and re-categorize.

@@ -25,6 +25,10 @@ export interface LedgerStore {
   ): void
   /** Returns false (and changes nothing) when a goal still has linked transactions. */
   removeRow(group: Group, index: number): boolean
+  /** Delete several transactions at once (indexes into state.transactions). */
+  removeTransactions(indexes: number[]): void
+  /** Set one category on several transactions at once. */
+  recategorize(indexes: number[], category: string): void
   startBlank(): void
   /** Replace everything (restore from backup). */
   replaceState(state: State): void
@@ -93,6 +97,24 @@ export function createLedgerStore(storage: Storage = createLocalStorage()) {
         }
         commit({ ...s, [group]: s[group].filter((_, i) => i !== index) })
         return true
+      },
+      removeTransactions(indexes) {
+        const s = get().state
+        const drop = new Set(indexes)
+        commit({
+          ...s,
+          transactions: s.transactions.filter((_, i) => !drop.has(i)),
+        })
+      },
+      recategorize(indexes, category) {
+        const s = get().state
+        const pick = new Set(indexes)
+        commit({
+          ...s,
+          transactions: s.transactions.map((t, i) =>
+            pick.has(i) ? { ...t, category } : t,
+          ),
+        })
       },
       replaceState(state) {
         commit(state)
