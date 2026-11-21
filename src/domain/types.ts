@@ -37,6 +37,21 @@ export interface Transaction {
   /** Goal id; only meaningful for savings-related types. */
   goal: string
   notes: string
+  /** Set when generated from a recurring rule; makes generation idempotent. */
+  ruleId?: string
+}
+
+export interface Recurring {
+  id: string
+  name: string
+  category: string
+  type: Extract<TransactionType, 'Income' | 'Expense' | 'Savings transfer'>
+  cadence: Exclude<Cadence, 'One-time'>
+  amount: MoneyInput
+  /** First occurrence, `YYYY-MM-DD`; later dates follow the cadence from here. */
+  start: string
+  /** Goal id for Savings transfer; empty means the general goal. */
+  goal: string
 }
 
 export interface Goal {
@@ -58,6 +73,7 @@ export interface State {
   rollover: boolean
   budget: BudgetItem[]
   transactions: Transaction[]
+  recurring: Recurring[]
   goals: Goal[]
 }
 

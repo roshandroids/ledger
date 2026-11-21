@@ -4,6 +4,7 @@ import type { Cadence } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
 import { DrivePanel } from '../components/DrivePanel'
+import { RecurringPanel } from '../components/RecurringPanel'
 import { BackupPanel } from '../components/BackupPanel'
 import { CategoryInput } from '../components/CategoryInput'
 import { CategoryDatalist } from '../components/CategoryDatalist'
@@ -146,6 +147,7 @@ export function BudgetPage() {
           />
         </div>
       </Panel>
+      <RecurringPanel />
       <BackupPanel />
       <DrivePanel />
     </>

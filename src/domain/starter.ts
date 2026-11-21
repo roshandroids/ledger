@@ -33,6 +33,7 @@ export function starter(sample = true): State {
       }),
     ),
     transactions: [],
+    recurring: [],
     goals: [
       { id: 'general', name: 'General savings', target: '', opening: '' },
     ],

@@ -55,6 +55,26 @@ describe('ledger store', () => {
     ])
   })
 
+  it('generates a month of recurring transactions once, or one occurrence', () => {
+    const { store } = memory({ ...starter(false), month: '2026-03' })
+    store.getState().addRow('recurring')
+    const id = store.getState().state.recurring[0].id
+    store.getState().updateRow('recurring', 0, {
+      name: 'Gym',
+      amount: 20,
+      cadence: 'Weekly',
+      start: '2026-03-02',
+    })
+    expect(
+      store
+        .getState()
+        .generateRecurring('2026-03', { ruleId: id, date: '2026-03-09' }),
+    ).toBe(1)
+    expect(store.getState().generateRecurring('2026-03')).toBe(4)
+    expect(store.getState().generateRecurring('2026-03')).toBe(0)
+    expect(store.getState().state.transactions).toHaveLength(5)
+  })
+
   it('type change to Income or Expense clears the goal', () => {
     const { store } = memory(starter(false))
     store.getState().addRow('transactions')

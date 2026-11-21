@@ -157,6 +157,18 @@ for (const scheme of ['light', 'dark'] as const)
               month: '2026-03',
               pay: 2200,
               rollover: true,
+              recurring: [
+                {
+                  id: 'r1',
+                  name: 'Rent',
+                  category: 'Housing',
+                  type: 'Expense',
+                  cadence: 'Monthly',
+                  amount: 900,
+                  start: '2026-01-01',
+                  goal: '',
+                },
+              ],
               budget: [
                 {
                   name: 'Food',

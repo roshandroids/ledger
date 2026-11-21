@@ -43,7 +43,7 @@ describe('localStorage adapter', () => {
     }
     localStorage.setItem(V1_KEY, JSON.stringify(v1))
     const { state } = createLocalStorage().load()
-    expect(state).toEqual({ ...v1, rollover: false })
+    expect(state).toEqual({ ...v1, rollover: false, recurring: [] })
     expect(localStorage.getItem(V1_KEY)).toBe(JSON.stringify(v1))
     expect(localStorage.getItem(V2_KEY)).not.toBeNull()
   })

@@ -186,6 +186,7 @@ Status: done except "copy last month's budget": the budget is not per month (onl
 - Done when charts match `report()` for each month and rollover is covered by named tests.
 
 ### 10.3 Recurring transactions and bills (2-3 days)
+Status: done. Schema v4 (`recurring[]`, optional `ruleId` on transactions; v1-v3 blobs load unchanged). Paid is matched by rule id + date, not by name. Bills show on Overview; overdue and due-soon (7 days) only apply while viewing the current calendar month. A generated transaction you delete is re-created by the next generate. Not in the Excel export yet.
 - Recurring rule: name, amount, category, type, cadence, next date, optional goal. Schema v3 adds `recurring[]`.
 - "Generate this month's transactions" creates dated rows from rules, idempotently (a rule never posts twice for one date).
 - Upcoming bills list on Overview with paid/unpaid state (matched to a transaction by name + month) and overdue highlight.

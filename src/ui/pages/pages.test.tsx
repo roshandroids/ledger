@@ -111,6 +111,50 @@ describe('Trends and rollover', () => {
   })
 })
 
+describe('Recurring bills', () => {
+  it('adds a rule on Budget and focuses its first field', async () => {
+    at('/budget')
+    await userEvent.click(
+      screen.getByRole('button', { name: '+ Add recurring' }),
+    )
+    expect(screen.getByLabelText('Bill name')).toHaveFocus()
+    await userEvent.type(screen.getByLabelText('Bill name'), 'Rent')
+    await userEvent.type(screen.getByLabelText('Bill amount'), '900')
+    expect(useLedger.getState().state.recurring[0]).toMatchObject({
+      name: 'Rent',
+      amount: '900',
+      start: '2026-03-01',
+    })
+  })
+
+  it('shows bills on Overview and records one once', async () => {
+    useLedger.setState({
+      state: {
+        ...starter(false),
+        month: '2026-03',
+        recurring: [
+          {
+            id: 'r',
+            name: 'Rent',
+            category: 'Housing',
+            type: 'Expense',
+            cadence: 'Monthly',
+            amount: 900,
+            start: '2026-03-01',
+            goal: '',
+          },
+        ],
+      },
+      canSave: true,
+    })
+    at('/overview')
+    await userEvent.click(screen.getByRole('button', { name: /Mark paid/ }))
+    expect(useLedger.getState().state.transactions).toHaveLength(1)
+    expect(screen.queryByRole('button', { name: /Mark paid/ })).toBeNull()
+    expect(screen.getByText('Paid')).toBeInTheDocument()
+  })
+})
+
 describe('Limit alerts', () => {
   it('warns about categories near or over their budget', () => {
     useLedger.setState({

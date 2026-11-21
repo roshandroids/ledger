@@ -7,6 +7,8 @@ import { CashFlowChart } from '../components/CashFlowChart'
 import { SpendingDonut } from '../components/SpendingDonut'
 import { CategoryIcon } from '../components/CategoryIcon'
 import { LimitBar } from '../components/LimitBar'
+import { BillsPanel } from '../components/BillsPanel'
+import { useBills } from '../useBills'
 import { Notice } from '../components/Notice'
 import { DataTable } from '../components/DataTable'
 import { Panel } from '../components/Panel'
@@ -27,6 +29,12 @@ export function OverviewPage() {
         return s ? [{ row, ...s }] : []
       })
     : []
+  const bills = useBills()
+  const attention = (bills ?? []).filter(
+    (b) =>
+      (b.status === 'overdue' || b.status === 'soon') &&
+      b.due.rule.type !== 'Income',
+  )
   const flagged = limits.filter((l) => l.level !== 'ok')
   const stats: [string, string, string][] = [
     ['Take-home income', fmt(r.planIncome), 'Actual ' + fmt(r.actualIncome)],
@@ -81,6 +89,17 @@ export function OverviewPage() {
           </p>
         </div>
       </section>
+      {attention.length > 0 && (
+        <Notice>
+          {attention
+            .map(
+              (b) =>
+                `${b.due.rule.name || b.due.rule.category || 'A bill'} is ${b.status === 'overdue' ? 'overdue' : 'due soon'}`,
+            )
+            .join('. ')}
+          .
+        </Notice>
+      )}
       {flagged.length > 0 && (
         <Notice>
           {flagged
@@ -129,6 +148,7 @@ export function OverviewPage() {
           <SpendingDonut rows={ringRows(r.breakdown)} total={r.planSpend} />
         </Panel>
       </div>
+      {bills && <BillsPanel bills={bills} />}
       <Panel
         title="Category breakdown"
         subtitle="Spending only. Savings transfers are tracked separately."

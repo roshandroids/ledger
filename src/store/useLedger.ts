@@ -1,16 +1,24 @@
 import { create } from 'zustand'
 import {
+  dueInMonth,
   starter,
+  transactionFor,
   type BudgetItem,
   type Goal,
+  type Recurring,
   type State,
   type Transaction,
 } from '../domain'
 import { createLocalStorage } from '../storage/localStorage'
 import type { Storage } from '../storage/Storage'
 
-export type Group = 'budget' | 'transactions' | 'goals'
-type Row = { budget: BudgetItem; transactions: Transaction; goals: Goal }
+export type Group = 'budget' | 'transactions' | 'goals' | 'recurring'
+type Row = {
+  budget: BudgetItem
+  transactions: Transaction
+  goals: Goal
+  recurring: Recurring
+}
 type SettingKey = 'pay' | 'cadence' | 'target' | 'gym' | 'month' | 'rollover'
 
 export interface LedgerStore {
@@ -29,6 +37,14 @@ export interface LedgerStore {
   removeTransactions(indexes: number[]): void
   /** Set one category on several transactions at once. */
   recategorize(indexes: number[], category: string): void
+  /**
+   * Create the transactions for a month's recurring bills that have none yet.
+   * `only` limits it to one occurrence. Returns how many were added.
+   */
+  generateRecurring(
+    month: string,
+    only?: { ruleId: string; date: string },
+  ): number
   startBlank(): void
   /** Replace everything (restore from backup). */
   replaceState(state: State): void
@@ -54,6 +70,16 @@ const newRow = (group: Group, month: string): Row[Group] =>
         notes: '',
       },
       goals: { id: crypto.randomUUID(), name: '', target: '', opening: '' },
+      recurring: {
+        id: crypto.randomUUID(),
+        name: '',
+        category: '',
+        type: 'Expense',
+        cadence: 'Monthly',
+        amount: '',
+        start: month + '-01',
+        goal: '',
+      },
     }) satisfies Row
   )[group]
 
@@ -115,6 +141,23 @@ export function createLedgerStore(storage: Storage = createLocalStorage()) {
             pick.has(i) ? { ...t, category } : t,
           ),
         })
+      },
+      generateRecurring(month, only) {
+        const s = get().state
+        const todo = dueInMonth(s, month).filter(
+          (d) =>
+            !d.paid &&
+            (!only || (d.rule.id === only.ruleId && d.date === only.date)),
+        )
+        if (todo.length === 0) return 0
+        commit({
+          ...s,
+          transactions: [
+            ...s.transactions,
+            ...todo.map((d) => transactionFor(d.rule, d.date)),
+          ],
+        })
+        return todo.length
       },
       replaceState(state) {
         commit(state)
