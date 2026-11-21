@@ -111,6 +111,51 @@ describe('Trends and rollover', () => {
   })
 })
 
+describe('Limit alerts', () => {
+  it('warns about categories near or over their budget', () => {
+    useLedger.setState({
+      state: {
+        ...starter(false),
+        month: '2026-03',
+        budget: [
+          ['Food', 100],
+          ['Fun', 100],
+          ['Gas', 100],
+        ].map(([category, amount]) => ({
+          name: String(category),
+          category: String(category),
+          type: 'Expense' as const,
+          cadence: 'Monthly' as const,
+          amount,
+          due: '',
+        })),
+        transactions: [
+          ['Food', 150],
+          ['Fun', 85],
+          ['Gas', 10],
+        ].map(([category, amount]) => ({
+          date: '2026-03-04',
+          type: 'Expense' as const,
+          category: String(category),
+          amount,
+          goal: '',
+          notes: '',
+        })),
+      },
+      canSave: true,
+    })
+    at('/overview')
+    expect(
+      screen.getByText(/Food is over its limit \(150%\)/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Fun is near its limit \(85%\)/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Gas is/)).toBeNull()
+    expect(screen.getAllByText(/Over limit/)).toHaveLength(1)
+  })
+})
+
 describe('Transaction filters', () => {
   const seed = () => {
     const s = useLedger.getState()

@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
-import { report, rolloverCarry } from '../../domain'
+import { limitStatus, report, rolloverCarry } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { ringRows } from '../chartData'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { CashFlowChart } from '../components/CashFlowChart'
 import { SpendingDonut } from '../components/SpendingDonut'
 import { CategoryIcon } from '../components/CategoryIcon'
+import { LimitBar } from '../components/LimitBar'
+import { Notice } from '../components/Notice'
 import { DataTable } from '../components/DataTable'
 import { Panel } from '../components/Panel'
 import { fmt, pct } from '../format'
@@ -19,6 +21,13 @@ export function OverviewPage() {
   )
   const carried = (name: string) =>
     carry?.get(name.toLocaleLowerCase('en-CA')) ?? 0
+  const limits = r.active
+    ? r.breakdown.flatMap((row) => {
+        const s = limitStatus(row.actual, row.planned + carried(row.name))
+        return s ? [{ row, ...s }] : []
+      })
+    : []
+  const flagged = limits.filter((l) => l.level !== 'ok')
   const stats: [string, string, string][] = [
     ['Take-home income', fmt(r.planIncome), 'Actual ' + fmt(r.actualIncome)],
     [
@@ -72,6 +81,17 @@ export function OverviewPage() {
           </p>
         </div>
       </section>
+      {flagged.length > 0 && (
+        <Notice>
+          {flagged
+            .map(
+              (l) =>
+                `${l.row.name} is ${l.level === 'over' ? 'over' : 'near'} its limit (${pct(l.ratio)})`,
+            )
+            .join('. ')}
+          .
+        </Notice>
+      )}
       <div className="grid gap-4 md:grid-cols-4">
         {stats.map(([label, value, detail]) => (
           <div
@@ -121,6 +141,7 @@ export function OverviewPage() {
             ...(carry ? ['Carried over'] : []),
             'Actual',
             'Plan remaining',
+            'Limit used',
           ]}
           empty="Add expenses or transactions to see the category breakdown."
           rows={r.breakdown.map((row) => ({
@@ -136,6 +157,14 @@ export function OverviewPage() {
               fmt(
                 r.active ? row.planned + carried(row.name) - row.actual : null,
               ),
+              (() => {
+                const s = limits.find((l) => l.row === row)
+                return s ? (
+                  <LimitBar ratio={s.ratio} level={s.level} name={row.name} />
+                ) : (
+                  '—'
+                )
+              })(),
             ],
           }))}
         />

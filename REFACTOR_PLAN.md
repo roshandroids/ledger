@@ -193,6 +193,7 @@ Status: done except "copy last month's budget": the budget is not per month (onl
 - Done when generating twice produces no duplicates and a cadence/edge-date test table passes (month ends, leap day).
 
 ### 10.4 Per-category limits and alerts (1-2 days)
+Status: done, simplified: a category's budget (plus carried-over amount) is its limit, so there is no separate limit field or schema change. Shown on Overview (Limit used column and notice); not repeated on Budget, which edits plans and has no actuals.
 - Optional monthly limit per category; progress bar in the category breakdown and on the Budget page.
 - Alert states at 80% and 100%, shown as text and icon, not color alone (WCAG).
 - Overview notice listing categories over limit.
