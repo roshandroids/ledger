@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
 import { report } from '../../domain'
 import { useLedger } from '../../store/useLedger'
+import { ringRows } from '../chartData'
+import { AnimatedNumber } from '../components/AnimatedNumber'
+import { CashFlowChart } from '../components/CashFlowChart'
+import { SpendingDonut } from '../components/SpendingDonut'
 import { DataTable } from '../components/DataTable'
 import { Panel } from '../components/Panel'
 import { fmt, pct } from '../format'
@@ -34,7 +38,7 @@ export function OverviewPage() {
               ((r.afterTarget ?? 0) < 0 ? 'text-red-300' : 'text-mint')
             }
           >
-            {fmt(r.afterTarget)}
+            <AnimatedNumber value={r.afterTarget} format={fmt} />
           </div>
           <p className="mt-2 text-sm text-slate-300">
             {r.planIncome === null
@@ -72,6 +76,31 @@ export function OverviewPage() {
             <small className="text-muted">{detail}</small>
           </div>
         ))}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Panel
+          title="Monthly cash flow"
+          subtitle="Planned vs. actual for the selected month"
+        >
+          <CashFlowChart
+            rows={[
+              { name: 'Income', plan: r.planIncome, actual: r.actualIncome },
+              {
+                name: 'Spending',
+                plan: r.planSpend,
+                actual: r.active ? r.actualSpend : null,
+              },
+              {
+                name: 'Net savings',
+                plan: r.planSaved,
+                actual: r.active ? r.actualSaved : null,
+              },
+            ]}
+          />
+        </Panel>
+        <Panel title="Where it goes" subtitle="Planned spending by category">
+          <SpendingDonut rows={ringRows(r.breakdown)} total={r.planSpend} />
+        </Panel>
       </div>
       <Panel
         title="Category breakdown"

@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useLedger } from '../../store/useLedger'
 import { Notice } from '../components/Notice'
@@ -45,7 +46,15 @@ export function Shell() {
               an empty budget.
             </Notice>
           )}
-          <Outlet />
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="grid gap-5"
+          >
+            <Outlet />
+          </motion.div>
         </div>
       </main>
     </div>
