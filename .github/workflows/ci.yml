@@ -28,3 +28,97 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
+
+  release:
+    name: Deploy and publish release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: ledger-production
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    environment:
+      name: production
+      url: https://ledger.rsprojects.dev
+    env:
+      PRODUCTION_URL: https://ledger.rsprojects.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Check release version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          # Only the current main tip can initiate a production deploy.
+          remote_head=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [[ "$remote_head" != "$GITHUB_SHA" ]]; then
+            echo "Main moved. The newer CI run will handle the release."
+            exit 0
+          fi
+          if gh release view "$tag" --json tagName --jq .tagName; then
+            echo "$tag is already released. Bump the version and changelog for another deployment."
+            exit 0
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag"; then
+            echo "::error::Tag $tag already exists without a GitHub Release."
+            exit 1
+          else
+            result=$?
+            if [[ "$result" != 2 ]]; then exit "$result"; fi
+          fi
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+      - if: steps.version.outputs.publish == 'true'
+        run: npm ci
+      - name: Build versioned site
+        if: steps.version.outputs.publish == 'true'
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+        run: |
+          npm run build
+          node scripts/prepare-release.mjs
+      - name: Publish to Netlify
+        if: steps.version.outputs.publish == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$NETLIFY_AUTH_TOKEN" || -z "$NETLIFY_SITE_ID" ]]; then
+            echo "::error::Set NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID in the production environment."
+            exit 1
+          fi
+          if curl --fail --silent --max-time 10 "$PRODUCTION_URL/release.json?commit=$GITHUB_SHA" | cmp --silent dist/release.json -; then
+            echo "This build is already live."
+            exit 0
+          fi
+          npx --yes netlify-cli@27.10.1 deploy --no-build --prod --dir dist --message "$RELEASE_TAG ($GITHUB_SHA)"
+      - name: Verify production and publish GitHub Release
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for attempt in {1..30}; do
+            if curl --fail --silent --max-time 10 "$PRODUCTION_URL/release.json?commit=$GITHUB_SHA" | cmp --silent dist/release.json -; then
+              gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --title "Ledger $RELEASE_TAG" --notes-file dist-release-notes.md
+              exit 0
+            fi
+            echo "Waiting for the published site ($attempt/30)."
+            sleep 10
+          done
+          echo "::error::Production did not serve the expected version and commit."
+          exit 1
