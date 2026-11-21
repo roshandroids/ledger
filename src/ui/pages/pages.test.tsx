@@ -6,6 +6,12 @@ import App from './../../App'
 import { starter } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 
+/** Open a custom dropdown by its label and pick an option. */
+async function choose(label: string, option: string) {
+  await userEvent.click(screen.getByLabelText(label))
+  await userEvent.click(await screen.findByRole('option', { name: option }))
+}
+
 const at = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -36,18 +42,9 @@ describe('Budget', () => {
     at('/budget')
     await userEvent.click(screen.getByRole('button', { name: '+ Add item' }))
     expect(screen.queryByLabelText('Due month')).toBeNull()
-    await userEvent.selectOptions(
-      screen.getByLabelText('Frequency'),
-      'One-time',
-    )
+    await choose('Frequency', 'One-time')
     expect(screen.getByLabelText('Due month')).toBeInTheDocument()
-    expect(screen.getByLabelText('Frequency')).toHaveValue('One-time')
-  })
-
-  it('gym radio updates the store', async () => {
-    at('/budget')
-    await userEvent.click(screen.getByRole('radio', { name: /Fit4Less/ }))
-    expect(useLedger.getState().state.gym).toBe('fit')
+    expect(screen.getByLabelText('Frequency')).toHaveTextContent('One-time')
   })
 })
 
@@ -58,10 +55,7 @@ describe('Transactions', () => {
       screen.getByRole('button', { name: '+ Add transaction' }),
     )
     expect(screen.queryByLabelText('Savings goal')).toBeNull()
-    await userEvent.selectOptions(
-      screen.getByLabelText('Transaction type'),
-      'Savings transfer',
-    )
+    await choose('Transaction type', 'Savings transfer')
     expect(screen.getByLabelText('Savings goal')).toBeInTheDocument()
   })
 })
@@ -125,5 +119,34 @@ describe('Backup', () => {
       await screen.findByRole('button', { name: 'Replace', hidden: true }),
     )
     expect(useLedger.getState().state.pay).toBe('777')
+  })
+})
+
+describe('Pickers', () => {
+  it('month picker changes the report month', async () => {
+    at('/overview')
+    await userEvent.click(screen.getByLabelText('Report month'))
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Previous year' }),
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Jun' }))
+    expect(useLedger.getState().state.month).toBe('2025-06')
+  })
+
+  it('date picker sets an ISO date', async () => {
+    at('/transactions')
+    await userEvent.click(
+      screen.getByRole('button', { name: '+ Add transaction' }),
+    )
+    await userEvent.click(screen.getByLabelText('Date'))
+    await userEvent.click(
+      await screen.findByRole('button', { name: /March 15th, 2026/ }),
+    )
+    expect(useLedger.getState().state.transactions[0].date).toBe('2026-03-15')
+  })
+
+  it('there is no dedicated gym section', () => {
+    at('/budget')
+    expect(screen.queryByText('Gym membership')).toBeNull()
   })
 })

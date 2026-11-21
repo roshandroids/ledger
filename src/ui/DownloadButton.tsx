@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { useState } from 'react'
 import { useLedger } from '../store/useLedger'
 
@@ -26,13 +27,14 @@ export function DownloadButton() {
   }
   return (
     <>
-      <button
+      <motion.button
+        whileTap={{ scale: 0.96 }}
         onClick={download}
         disabled={busy}
         className="bg-nav rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
         <span aria-hidden="true">↓</span> Download Excel
-      </button>
+      </motion.button>
       <span role="status" className="sr-only">
         {msg}
       </span>

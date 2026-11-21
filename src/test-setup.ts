@@ -15,3 +15,10 @@ window.matchMedia ??= ((query: string) => ({
   onchange: null,
   dispatchEvent: () => false,
 })) as typeof window.matchMedia
+
+// Headless UI's floating panels need ResizeObserver, which jsdom lacks.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}

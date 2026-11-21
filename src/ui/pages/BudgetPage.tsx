@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
-import { frequencies, gymMonthly, gymOptions, report } from '../../domain'
+import { frequencies, report } from '../../domain'
 import type { Cadence } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
 import { BackupPanel } from '../components/BackupPanel'
 import { CategoryInput } from '../components/CategoryInput'
 import { CategoryDatalist } from '../components/CategoryDatalist'
+import { MonthPicker } from '../components/MonthPicker'
 import { DataTable } from '../components/DataTable'
 import { MoneyInput } from '../components/MoneyInput'
 import { Panel } from '../components/Panel'
@@ -57,32 +58,6 @@ export function BudgetPage() {
               onChange={(v) => setSetting('target', v)}
             />
           </label>
-        </div>
-      </Panel>
-      <Panel
-        title="Gym membership"
-        subtitle="Compare the provided membership rates, including 13% Ontario HST."
-      >
-        <div className="grid gap-3 md:grid-cols-3">
-          {gymOptions.map((g) => (
-            <label
-              key={g.id}
-              className="border-line grid cursor-pointer gap-1 rounded-lg border p-3 text-sm"
-            >
-              <input
-                type="radio"
-                name="gym"
-                value={g.id}
-                checked={state.gym === g.id}
-                onChange={() => setSetting('gym', g.id)}
-              />
-              <span className="font-semibold">{g.name}</span>
-              <small className="text-muted">
-                {fmt(gymMonthly(g))} / month average
-                {g.fee ? ' · includes annual fee' : ''}
-              </small>
-            </label>
-          ))}
         </div>
       </Panel>
       <Panel
@@ -144,9 +119,8 @@ export function BudgetPage() {
                   onChange={(amount) => updateRow('budget', i, { amount })}
                 />,
                 r.cadence === 'One-time' ? (
-                  <TextInput
+                  <MonthPicker
                     label="Due month"
-                    type="month"
                     value={r.due}
                     onChange={(due) => updateRow('budget', i, { due })}
                   />

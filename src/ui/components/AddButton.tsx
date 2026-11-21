@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { forwardRef } from 'react'
 
 export const AddButton = forwardRef<
@@ -5,13 +6,14 @@ export const AddButton = forwardRef<
   { onClick(): void; children: string }
 >(function AddButton({ onClick, children }, ref) {
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: 0.96 }}
       ref={ref}
       onClick={onClick}
       className="border-line rounded-lg border px-3 py-2 text-sm font-semibold"
     >
       {children}
-    </button>
+    </motion.button>
   )
 })
 

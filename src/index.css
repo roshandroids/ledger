@@ -97,3 +97,21 @@ dialog::backdrop {
     scroll-behavior: auto !important;
   }
 }
+
+/* react-day-picker themed with the app tokens. */
+.ledger-rdp {
+  --rdp-accent-color: var(--nav);
+  --rdp-accent-background-color: var(--surface);
+  --rdp-today-color: var(--teal);
+  color: var(--ink);
+}
+.ledger-rdp select {
+  background: var(--card);
+  color: var(--ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-closed],
+  [data-headlessui-state] {
+    transition-duration: 0s !important;
+  }
+}

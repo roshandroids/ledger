@@ -4,6 +4,7 @@ import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
 import { CategoryInput } from '../components/CategoryInput'
 import { CategoryDatalist } from '../components/CategoryDatalist'
+import { DatePicker } from '../components/DatePicker'
 import { DataTable } from '../components/DataTable'
 import { MoneyInput } from '../components/MoneyInput'
 import { Panel } from '../components/Panel'
@@ -53,9 +54,8 @@ export function TransactionsPage() {
           rows={state.transactions.map((t, i) => ({
             key: i,
             cells: [
-              <TextInput
+              <DatePicker
                 label="Date"
-                type="date"
                 value={t.date}
                 onChange={(date) => updateRow('transactions', i, { date })}
               />,

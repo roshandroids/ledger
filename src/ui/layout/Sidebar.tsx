@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { NavLink } from 'react-router'
 import { pages } from '../pages/pages'
 
@@ -27,10 +28,21 @@ export function Sidebar() {
           <NavLink
             key={p.path}
             to={`/${p.path}`}
-            className="aria-[current=page]:text-mint md:aria-[current=page]:bg-nav-active md:hover:bg-nav-hover flex flex-col items-center gap-1 px-1 py-2 text-[0.7rem] font-semibold text-slate-300 md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-3 md:text-sm"
+            className="aria-[current=page]:text-mint relative isolate flex flex-col items-center gap-1 px-1 py-2 text-[0.7rem] font-semibold text-slate-300 md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-3 md:text-sm"
           >
-            <p.icon size={20} aria-hidden="true" />
-            {p.nav}
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                    className="bg-nav-active absolute inset-x-2 inset-y-1 -z-10 rounded-lg md:inset-0"
+                  />
+                )}
+                <p.icon size={20} aria-hidden="true" />
+                {p.nav}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

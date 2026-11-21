@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 
 import { EmptyState } from './EmptyState'
@@ -32,8 +33,11 @@ export function DataTable({ caption, headers, rows, empty }: Props) {
           </tr>
         </thead>
         <tbody className="block md:table-row-group">
-          {rows.map((r) => (
-            <tr
+          {rows.map((r, ri) => (
+            <motion.tr
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18, delay: Math.min(ri, 8) * 0.02 }}
               key={r.key}
               className="border-line max-md:bg-surface block border-t max-md:mb-3 max-md:grid max-md:gap-2 max-md:rounded-xl max-md:border max-md:p-3 md:table-row"
             >
@@ -46,7 +50,7 @@ export function DataTable({ caption, headers, rows, empty }: Props) {
                   {c}
                 </td>
               ))}
-            </tr>
+            </motion.tr>
           ))}
         </tbody>
       </table>

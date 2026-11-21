@@ -1,3 +1,4 @@
+import { MotionConfig } from 'motion/react'
 import { Navigate, Route, Routes } from 'react-router'
 import { Shell } from './ui/layout/Shell'
 import { BudgetPage } from './ui/pages/BudgetPage'
@@ -21,14 +22,16 @@ const legacy = () => {
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<Shell />}>
-        <Route index element={<Navigate to={legacy()} replace />} />
-        {pages.map((p) => (
-          <Route key={p.path} path={p.path} element={elements[p.path]} />
-        ))}
-        <Route path="*" element={<Navigate to="/overview" replace />} />
-      </Route>
-    </Routes>
+    <MotionConfig reducedMotion="user">
+      <Routes>
+        <Route element={<Shell />}>
+          <Route index element={<Navigate to={legacy()} replace />} />
+          {pages.map((p) => (
+            <Route key={p.path} path={p.path} element={elements[p.path]} />
+          ))}
+          <Route path="*" element={<Navigate to="/overview" replace />} />
+        </Route>
+      </Routes>
+    </MotionConfig>
   )
 }

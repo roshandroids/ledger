@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { MonthPicker } from '../components/MonthPicker'
 import { ThemeToggle } from '../ThemeToggle'
 
 interface Props {
@@ -20,13 +21,13 @@ export function Topbar({ title, month, onMonthChange, actions }: Props) {
         </h1>
       </div>
       <div className="flex items-center gap-2">
-        <input
-          type="month"
-          aria-label="Report month"
-          value={month}
-          onChange={(e) => e.target.value && onMonthChange(e.target.value)}
-          className="border-line min-w-0 flex-1 rounded-lg border px-3 py-2 md:flex-none"
-        />
+        <div className="min-w-0 flex-1 md:w-48 md:flex-none">
+          <MonthPicker
+            label="Report month"
+            value={month}
+            onChange={onMonthChange}
+          />
+        </div>
         {actions}
         <ThemeToggle />
       </div>
