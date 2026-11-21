@@ -316,3 +316,29 @@ test('debt strategies compare snowball and avalanche with an extra payment', asy
     'Loan → Card',
   )
 })
+
+test('tags filter the list and a split moves spending between categories', async ({
+  page,
+}) => {
+  await page.goto('/transactions')
+  await page
+    .getByRole('button', { name: 'Start blank' })
+    .click()
+    .catch(() => {})
+  await page.getByRole('button', { name: '+ Add transaction' }).click()
+  await ctl(page, 'Amount').fill('100')
+  await page.getByLabel('Category', { exact: true }).fill('Groceries')
+  await ctl(page, 'Tags').fill('Trip')
+  await ctl(page, 'Notes').click() // blur commits the tags
+  await expect(page.getByLabel('Filter by tag')).toBeVisible()
+  await page.getByRole('button', { name: 'Split transaction' }).click()
+  await ctl(page, 'Split category').fill('Pharmacy')
+  await ctl(page, 'Split amount').fill('30')
+  await expect(page.getByRole('dialog')).toContainText(
+    '$70.00 stays in Groceries',
+  )
+  await page.getByRole('button', { name: 'Save split' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Split transaction' }),
+  ).toContainText('(1)')
+})

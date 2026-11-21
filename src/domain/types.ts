@@ -41,6 +41,15 @@ export interface Transaction {
   ruleId?: string
   /** Account id; empty or unknown means the first account. */
   account?: string
+  /** Free-form labels, matched case-insensitively. */
+  tags?: string[]
+  /** Parts of the amount filed under other categories; the rest stays in `category`. */
+  splits?: Split[]
+}
+
+export interface Split {
+  category: string
+  amount: MoneyInput
 }
 
 export type AccountKind =

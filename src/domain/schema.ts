@@ -4,7 +4,7 @@ import { currencies } from './currencies'
 import { starter } from './starter'
 import type { State } from './types'
 
-export const SCHEMA_VERSION = 6
+export const SCHEMA_VERSION = 7
 
 const money = z.union([z.string(), z.number()])
 const cadence = z.enum(Object.keys(frequencies) as [string, ...string[]])
@@ -28,6 +28,11 @@ const transaction = z.object({
   notes: text,
   ruleId: z.string().optional().catch(undefined),
   account: z.string().optional().catch(undefined),
+  tags: z.array(z.string()).optional().catch(undefined),
+  splits: z
+    .array(z.object({ category: text, amount: money.catch('') }))
+    .optional()
+    .catch(undefined),
 })
 
 const account = z.object({

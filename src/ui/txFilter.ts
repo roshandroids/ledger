@@ -11,6 +11,8 @@ export interface TxFilter {
   category: string
   /** '' = all, otherwise an account id (unassigned rows count as the default account). */
   account: string
+  /** '' = all, otherwise a tag. */
+  tag: string
   from: string
   to: string
   min: string
@@ -23,6 +25,7 @@ export const emptyFilter: TxFilter = {
   type: '',
   category: '',
   account: '',
+  tag: '',
   from: '',
   to: '',
   min: '',
@@ -64,6 +67,7 @@ export function filterTransactions(
   accountOf: (t: Transaction) => string | null = (t) => t.account ?? null,
 ): TxView[] {
   const q = lower(f.q)
+  const tag = lower(f.tag)
   const min = num(f.min)
   const max = num(f.max)
   const rows = txs
@@ -76,12 +80,19 @@ export function filterTransactions(
           return false
       }
       if (f.account && accountOf(tx) !== f.account) return false
+      if (tag && !(tx.tags ?? []).some((x) => lower(x) === tag)) return false
       if (f.from && !(tx.date >= f.from)) return false
       if (f.to && !(tx.date <= f.to)) return false
       const amount = num(tx.amount)
       if (!Number.isNaN(min) && !(amount >= min)) return false
       if (!Number.isNaN(max) && !(amount <= max)) return false
-      if (q && !lower(`${tx.category} ${tx.notes}`).includes(q)) return false
+      if (
+        q &&
+        !lower(
+          `${tx.category} ${tx.notes} ${(tx.tags ?? []).join(' ')}`,
+        ).includes(q)
+      )
+        return false
       return true
     })
   // Invalid dates/amounts sort last in either direction.

@@ -41,6 +41,23 @@ const isValid = (row: Transaction) =>
   row.amount !== '' &&
   Number.isFinite(Number(row.amount))
 
+/**
+ * Category parts of a transaction: each split, then the remainder under the
+ * row's own category. Splits that are invalid or exceed the amount are ignored.
+ */
+export function splitParts(
+  row: Transaction,
+): { category: string; amount: number }[] {
+  const total = money(row.amount)
+  const parts = (row.splits ?? [])
+    .map((s) => ({ category: s.category, amount: money(s.amount) }))
+    .filter((s) => s.amount > 0)
+  const used = parts.reduce((t, s) => t + s.amount, 0)
+  if (!parts.length || used > total + 0.005)
+    return [{ category: row.category, amount: total }]
+  return [...parts, { category: row.category, amount: total - used }]
+}
+
 export function report(state: State): Report {
   const activeGym =
     gymOptions.find((item) => item.id === state.gym) ?? gymOptions[0]
@@ -114,7 +131,10 @@ export function report(state: State): Report {
   if (gym) add('Fitness', 'planned', gym)
   current
     .filter((row) => spendingTypes.includes(row.type))
-    .forEach((row) => add(row.category, 'actual', money(row.amount)))
+    .forEach((row) => {
+      const parts = splitParts(row)
+      parts.forEach((p) => add(p.category, 'actual', p.amount))
+    })
   const breakdown = [...groups.values()].sort(
     (a, b) =>
       b.planned - a.planned ||

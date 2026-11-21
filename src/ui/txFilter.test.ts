@@ -69,3 +69,11 @@ it('filters by account, resolving unassigned rows through the resolver', () => {
   expect(run2('b')).toEqual([0])
   expect(isFiltered({ ...emptyFilter, account: 'a' })).toBe(true)
 })
+
+it('filters by tag case-insensitively and searches tags', () => {
+  const rows = [t({ tags: ['Trip'] }), t({}), t({ tags: ['work', 'trip'] })]
+  const idx = (f: Partial<typeof emptyFilter>) =>
+    filterTransactions(rows, { ...emptyFilter, ...f }).map((r) => r.index)
+  expect(idx({ tag: 'trip' })).toEqual([0, 2])
+  expect(idx({ q: 'work' })).toEqual([2])
+})

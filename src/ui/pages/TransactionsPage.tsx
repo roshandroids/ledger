@@ -12,6 +12,8 @@ import { ImportPanel } from '../components/ImportPanel'
 import { MoneyInput } from '../components/MoneyInput'
 import { Panel } from '../components/Panel'
 import { Select } from '../components/Select'
+import { SplitDialog } from '../components/SplitDialog'
+import { TagsInput } from '../components/TagsInput'
 import { TextInput } from '../components/TextInput'
 import { useRowFocus } from '../useRowFocus'
 import {
@@ -44,6 +46,11 @@ export function TransactionsPage() {
     setParams(toParams({ ...filter, ...patch }), { replace: true })
   const [selected, setSelected] = useState<number[]>([])
   const [bulkCategory, setBulkCategory] = useState('')
+  const [splitting, setSplitting] = useState<number | null>(null)
+  const tags = useMemo(
+    () => [...new Set(state.transactions.flatMap((t) => t.tags ?? []))].sort(),
+    [state.transactions],
+  )
   const view = useMemo(
     () =>
       filterTransactions(state.transactions, filter, (t) =>
@@ -135,6 +142,17 @@ export function TransactionsPage() {
                   ]),
                 ]}
                 onChange={(account) => setFilter({ account })}
+              />
+            )}
+            {tags.length > 0 && (
+              <Select
+                label="Filter by tag"
+                value={filter.tag}
+                options={[
+                  ['', 'All tags'],
+                  ...tags.map((t): [string, string] => [t, t]),
+                ]}
+                onChange={(tag) => setFilter({ tag })}
               />
             )}
             <Select
@@ -232,6 +250,7 @@ export function TransactionsPage() {
               'Amount',
               ...(state.accounts.length ? ['Account'] : []),
               'Savings goal',
+              'Tags',
               'Notes',
               '',
             ]}
@@ -274,14 +293,25 @@ export function TransactionsPage() {
                     updateRow('transactions', i, { category })
                   }
                 />,
-                <MoneyInput
-                  label="Amount"
-                  allowNegative
-                  value={t.amount}
-                  onChange={(amount) =>
-                    updateRow('transactions', i, { amount })
-                  }
-                />,
+                <div className="flex items-center gap-2">
+                  <MoneyInput
+                    label="Amount"
+                    allowNegative
+                    value={t.amount}
+                    onChange={(amount) =>
+                      updateRow('transactions', i, { amount })
+                    }
+                  />
+                  {(t.type === 'Expense' || t.type === 'Fund expense') && (
+                    <button
+                      className={btn}
+                      aria-label="Split transaction"
+                      onClick={() => setSplitting(i)}
+                    >
+                      Split{t.splits?.length ? ` (${t.splits.length})` : ''}
+                    </button>
+                  )}
+                </div>,
                 ...(state.accounts.length
                   ? [
                       <Select
@@ -304,6 +334,10 @@ export function TransactionsPage() {
                 ) : (
                   '—'
                 ),
+                <TagsInput
+                  value={t.tags}
+                  onChange={(tags) => updateRow('transactions', i, { tags })}
+                />,
                 <TextInput
                   label="Notes"
                   maxLength={300}
@@ -319,6 +353,13 @@ export function TransactionsPage() {
           />
         </div>
       </Panel>
+      {splitting !== null && state.transactions[splitting] && (
+        <SplitDialog
+          tx={state.transactions[splitting]}
+          onSave={(splits) => updateRow('transactions', splitting, { splits })}
+          onClose={() => setSplitting(null)}
+        />
+      )}
       <ImportPanel />
     </>
   )
