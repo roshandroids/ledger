@@ -1,29 +1,99 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
 
-@theme {
-  --font-sans:
-    Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --color-ink: #172337;
-  --color-muted: #526276;
-  --color-nav: #121d32;
-  --color-nav-hover: #24354e;
-  --color-nav-active: #263750;
-  --color-surface: #f3f6f9;
-  --color-line: #dce4ec;
-  --color-mint: #a8f2d2;
-  --color-teal: #10735b;
-  --color-plan: #7dd9bc;
-  --color-actual: #5774c9;
-  --color-negative: #a53036;
+:root {
+  color-scheme: light;
+  --ink: #172337;
+  --muted: #526276;
+  --nav: #121d32;
+  --nav-hover: #24354e;
+  --nav-active: #263750;
+  --surface: #f3f6f9;
+  --card: #ffffff;
+  --line: #dce4ec;
+  --mint: #a8f2d2;
+  --teal: #10735b;
+  --plan: #7dd9bc;
+  --actual: #5774c9;
+  --negative: #a53036;
+}
+
+/* Dark: explicit choice, or system preference when the user has not chosen. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #e6edf7;
+  --muted: #9fb0c5;
+  --nav: #0a1220;
+  --nav-hover: #18253a;
+  --nav-active: #1d2d46;
+  --surface: #0e1626;
+  --card: #162135;
+  --line: #2a3a52;
+  --actual: #8aa5ee;
+  --negative: #f08a8f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --ink: #e6edf7;
+    --muted: #9fb0c5;
+    --nav: #0a1220;
+    --nav-hover: #18253a;
+    --nav-active: #1d2d46;
+    --surface: #0e1626;
+    --card: #162135;
+    --line: #2a3a52;
+    --actual: #8aa5ee;
+    --negative: #f08a8f;
+  }
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-nav: var(--nav);
+  --color-nav-hover: var(--nav-hover);
+  --color-nav-active: var(--nav-active);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-mint: var(--mint);
+  --color-teal: var(--teal);
+  --color-plan: var(--plan);
+  --color-actual: var(--actual);
+  --color-negative: var(--negative);
 }
 
 body {
-  background: var(--color-surface);
-  color: var(--color-ink);
+  background: var(--surface);
+  color: var(--ink);
   font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01', 'tnum';
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+select,
+dialog {
+  background: var(--card);
+  color: var(--ink);
+}
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+.recharts-text,
+.recharts-legend-item-text {
+  fill: var(--muted);
+  color: var(--muted) !important;
 }
 
 :focus-visible {
   outline: 3px solid #4274d8;
   outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
 }

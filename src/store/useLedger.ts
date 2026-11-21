@@ -26,6 +26,8 @@ export interface LedgerStore {
   /** Returns false (and changes nothing) when a goal still has linked transactions. */
   removeRow(group: Group, index: number): boolean
   startBlank(): void
+  /** Replace everything (restore from backup). */
+  replaceState(state: State): void
 }
 
 const newRow = (group: Group, month: string): Row[Group] =>
@@ -91,6 +93,9 @@ export function createLedgerStore(storage: Storage = createLocalStorage()) {
         }
         commit({ ...s, [group]: s[group].filter((_, i) => i !== index) })
         return true
+      },
+      replaceState(state) {
+        commit(state)
       },
       startBlank() {
         commit({ ...starter(false), month: get().state.month })

@@ -17,3 +17,14 @@ it('keeps top 7 and folds the rest, dropping zero-plan rows', () => {
 it('is empty with no planned spend', () => {
   expect(ringRows([{ name: 'a', planned: 0, actual: 3 }])).toEqual([])
 })
+
+import { categoryIcon } from './categoryIcons'
+import { defaultCategories } from '../domain'
+
+it('every default category has its own icon; unknown names fall back', () => {
+  const fallback = categoryIcon('zzz unknown')
+  for (const c of defaultCategories.filter((c) => c !== 'Other')) {
+    expect(categoryIcon(c), c).not.toBe(fallback)
+  }
+  expect(categoryIcon('  GROCERIES ')).toBe(categoryIcon('Groceries'))
+})

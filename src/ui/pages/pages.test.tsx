@@ -102,3 +102,28 @@ describe('Overview', () => {
     expect(screen.getByTestId('remaining')).toHaveTextContent('$1,000.00')
   })
 })
+
+describe('Backup', () => {
+  it('rejects a non-backup file and restores a valid one after confirming', async () => {
+    at('/budget')
+    const file = screen.getByLabelText('Backup file')
+    await userEvent.upload(
+      file,
+      new File(['nope'], 'x.json', { type: 'application/json' }),
+    )
+    expect(
+      await screen.findByText('That file is not a Ledger backup.'),
+    ).toBeInTheDocument()
+    const good = JSON.stringify({
+      state: { ...starter(false), pay: '777', month: '2026-03' },
+    })
+    await userEvent.upload(
+      file,
+      new File([good], 'b.json', { type: 'application/json' }),
+    )
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Replace', hidden: true }),
+    )
+    expect(useLedger.getState().state.pay).toBe('777')
+  })
+})

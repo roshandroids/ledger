@@ -5,6 +5,7 @@ import {
   CartesianGrid,
   Legend,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
@@ -28,7 +29,7 @@ export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
       <div aria-hidden="true" className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ left: 8, right: 8 }}>
-            <CartesianGrid vertical={false} stroke="#dce4ec" />
+            <CartesianGrid vertical={false} stroke="var(--line)" />
             <XAxis dataKey="name" tickLine={false} />
             <YAxis
               tickFormatter={(v: number) => fmt(v)}
@@ -36,16 +37,25 @@ export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
               tickLine={false}
               axisLine={false}
             />
+            <Tooltip
+              formatter={(v) => fmt(Number(v))}
+              cursor={{ fill: 'var(--line)', opacity: 0.4 }}
+              contentStyle={{
+                background: 'var(--card)',
+                border: '1px solid var(--line)',
+                borderRadius: 8,
+              }}
+            />
             <Legend />
             <Bar
               dataKey="Plan"
-              fill="#7dd9bc"
+              fill="var(--plan)"
               radius={4}
               isAnimationActive={!reduced}
             />
             <Bar
               dataKey="Actual"
-              fill="#5774c9"
+              fill="var(--actual)"
               radius={4}
               isAnimationActive={!reduced}
             />

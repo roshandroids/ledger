@@ -1,6 +1,7 @@
 import { useReducedMotion } from 'motion/react'
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { palette } from '../chartData'
+import { CategoryIcon } from './CategoryIcon'
 import { fmt } from '../format'
 
 interface Props {
@@ -35,9 +36,17 @@ export function SpendingDonut({ rows, total }: Props) {
                 <Cell key={i} fill={palette[i]} />
               ))}
             </Pie>
+            <Tooltip
+              formatter={(v) => fmt(Number(v))}
+              contentStyle={{
+                background: 'var(--card)',
+                border: '1px solid var(--line)',
+                borderRadius: 8,
+              }}
+            />
           </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 grid place-content-center text-center">
+        <div className="pointer-events-none absolute inset-0 -z-0 grid place-content-center text-center">
           <span className="text-muted text-xs">Spending</span>
           <strong>{fmt(total)}</strong>
         </div>
@@ -50,6 +59,7 @@ export function SpendingDonut({ rows, total }: Props) {
               className="h-3 w-3 rounded-sm"
               style={{ background: palette[i] }}
             />
+            <CategoryIcon name={r.name} />
             <span className="flex-1">{r.name}</span>
             <b>{fmt(r.value)}</b>
           </li>

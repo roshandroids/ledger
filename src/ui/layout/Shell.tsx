@@ -17,7 +17,7 @@ export function Shell() {
   const startBlank = useLedger((s) => s.startBlank)
   if (!page) return <Navigate to="/overview" replace />
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[222px_minmax(0,1fr)]">
+    <div className="min-h-screen pb-20 md:grid md:grid-cols-[222px_minmax(0,1fr)] md:pb-0">
       <Sidebar />
       <main>
         <Topbar
@@ -26,7 +26,7 @@ export function Shell() {
           onMonthChange={(m) => setSetting('month', m)}
           actions={<DownloadButton />}
         />
-        <div className="grid gap-5 p-6 md:p-9">
+        <div className="grid gap-4 p-4 md:gap-5 md:p-9">
           {!canSave && (
             <Notice>
               Browser storage is unavailable. Download Excel before closing this
@@ -38,7 +38,7 @@ export function Shell() {
               action={
                 <button
                   onClick={startBlank}
-                  className="border-line rounded-lg border bg-white px-3 py-2 text-sm font-semibold"
+                  className="border-line rounded-lg border bg-card px-3 py-2 text-sm font-semibold"
                 >
                   Start blank
                 </button>

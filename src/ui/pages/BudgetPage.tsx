@@ -3,6 +3,9 @@ import { frequencies, gymMonthly, gymOptions, report } from '../../domain'
 import type { Cadence } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
+import { BackupPanel } from '../components/BackupPanel'
+import { CategoryInput } from '../components/CategoryInput'
+import { CategoryDatalist } from '../components/CategoryDatalist'
 import { DataTable } from '../components/DataTable'
 import { MoneyInput } from '../components/MoneyInput'
 import { Panel } from '../components/Panel'
@@ -91,6 +94,7 @@ export function BudgetPage() {
           </AddButton>
         }
       >
+        <CategoryDatalist extra={state.budget.map((b) => b.category)} />
         <div ref={tableRef}>
           <DataTable
             caption="Budget items"
@@ -114,9 +118,7 @@ export function BudgetPage() {
                   value={r.name}
                   onChange={(name) => updateRow('budget', i, { name })}
                 />,
-                <TextInput
-                  label="Category"
-                  maxLength={120}
+                <CategoryInput
                   value={r.category}
                   onChange={(category) => updateRow('budget', i, { category })}
                 />,
@@ -161,6 +163,7 @@ export function BudgetPage() {
           />
         </div>
       </Panel>
+      <BackupPanel />
     </>
   )
 }

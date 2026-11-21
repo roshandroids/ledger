@@ -2,6 +2,8 @@ import { goalTypes, transactionTypes } from '../../domain'
 import type { TransactionType } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
+import { CategoryInput } from '../components/CategoryInput'
+import { CategoryDatalist } from '../components/CategoryDatalist'
 import { DataTable } from '../components/DataTable'
 import { MoneyInput } from '../components/MoneyInput'
 import { Panel } from '../components/Panel'
@@ -17,12 +19,6 @@ export function TransactionsPage() {
     (i) => removeRow('transactions', i),
   )
   const { tableRef, addRef, onAdd, onRemove } = rowFocus
-  const categories = [
-    ...new Set([
-      'Fitness',
-      ...state.budget.map((b) => b.category).filter(Boolean),
-    ]),
-  ]
   const goals: [string, string][] = [
     ['', 'Choose a goal'],
     ...state.goals.map((g): [string, string] => [
@@ -40,11 +36,7 @@ export function TransactionsPage() {
         </AddButton>
       }
     >
-      <datalist id="category-list">
-        {categories.map((c) => (
-          <option key={c} value={c} />
-        ))}
-      </datalist>
+      <CategoryDatalist extra={state.budget.map((b) => b.category)} />
       <div ref={tableRef}>
         <DataTable
           caption="Transactions"
@@ -75,10 +67,7 @@ export function TransactionsPage() {
                   updateRow('transactions', i, { type: v as TransactionType })
                 }
               />,
-              <TextInput
-                label="Category"
-                list="category-list"
-                maxLength={120}
+              <CategoryInput
                 value={t.category}
                 onChange={(category) =>
                   updateRow('transactions', i, { category })

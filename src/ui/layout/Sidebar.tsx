@@ -1,12 +1,13 @@
 import { NavLink } from 'react-router'
 import { pages } from '../pages/pages'
 
+/** Bottom tab bar on phones; sticky side rail from md up. */
 export function Sidebar() {
   return (
-    <aside className="bg-nav flex flex-col p-5 text-white md:sticky md:top-0 md:h-screen md:px-5 md:pt-9 md:pb-6">
+    <aside className="bg-nav fixed inset-x-0 bottom-0 z-20 border-t border-white/10 text-white md:sticky md:top-0 md:flex md:h-screen md:flex-col md:border-t-0 md:px-5 md:pt-9 md:pb-6">
       <NavLink
         to="/overview"
-        className="flex items-center px-2 text-2xl font-bold tracking-tight"
+        className="hidden items-center px-2 text-2xl font-bold tracking-tight md:flex"
       >
         <span
           aria-hidden="true"
@@ -20,20 +21,15 @@ export function Sidebar() {
       </NavLink>
       <nav
         aria-label="Budget workspace"
-        className="mt-6 flex gap-2 overflow-x-auto md:mt-12 md:grid"
+        className="grid grid-cols-4 pb-[env(safe-area-inset-bottom)] md:mt-12 md:grid-cols-1 md:gap-2 md:pb-0"
       >
         {pages.map((p) => (
           <NavLink
             key={p.path}
             to={`/${p.path}`}
-            className="aria-[current=page]:bg-nav-active aria-[current=page]:text-mint hover:bg-nav-hover flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold whitespace-nowrap text-slate-300"
+            className="aria-[current=page]:text-mint md:aria-[current=page]:bg-nav-active md:hover:bg-nav-hover flex flex-col items-center gap-1 px-1 py-2 text-[0.7rem] font-semibold text-slate-300 md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-3 md:text-sm"
           >
-            <span
-              aria-hidden="true"
-              className="w-5 text-center text-xl leading-none"
-            >
-              {p.icon}
-            </span>
+            <p.icon size={20} aria-hidden="true" />
             {p.nav}
           </NavLink>
         ))}

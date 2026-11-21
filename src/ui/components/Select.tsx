@@ -15,7 +15,7 @@ export function Select({ label, options, onChange, ...rest }: Props) {
     <select
       aria-label={label}
       onChange={(e) => onChange(e.target.value)}
-      className="border-line w-full rounded-lg border bg-white px-3 py-2"
+      className="border-line w-full rounded-lg border bg-card px-3 py-2"
       {...rest}
     >
       {options.map((o) => {

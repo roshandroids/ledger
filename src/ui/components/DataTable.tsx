@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+import { EmptyState } from './EmptyState'
+
 interface Props {
   caption: string
   headers: string[]
@@ -7,14 +9,16 @@ interface Props {
   empty: string
 }
 
+/** A real table from md up; stacked label/value cards on phones. */
 export function DataTable({ caption, headers, rows, empty }: Props) {
-  if (rows.length === 0)
-    return <p className="text-muted py-6 text-center text-sm">{empty}</p>
+  if (rows.length === 0) {
+    return <EmptyState>{empty}</EmptyState>
+  }
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
+    <div className="md:overflow-x-auto">
+      <table className="block w-full text-left text-sm md:table">
         <caption className="sr-only">{caption}</caption>
-        <thead>
+        <thead className="max-md:sr-only">
           <tr>
             {headers.map((h, i) => (
               <th
@@ -27,11 +31,18 @@ export function DataTable({ caption, headers, rows, empty }: Props) {
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="block md:table-row-group">
           {rows.map((r) => (
-            <tr key={r.key} className="border-line border-t">
+            <tr
+              key={r.key}
+              className="border-line max-md:bg-surface block border-t max-md:mb-3 max-md:grid max-md:gap-2 max-md:rounded-xl max-md:border max-md:p-3 md:table-row"
+            >
               {r.cells.map((c, i) => (
-                <td key={i} className="px-2 py-2">
+                <td
+                  key={i}
+                  data-label={headers[i]}
+                  className="px-2 py-1 before:text-muted before:text-xs before:font-bold before:content-[attr(data-label)] max-md:flex max-md:items-center max-md:justify-between max-md:gap-3 max-md:[&>*]:max-w-[62%] md:table-cell md:py-2 md:before:hidden"
+                >
                   {c}
                 </td>
               ))}

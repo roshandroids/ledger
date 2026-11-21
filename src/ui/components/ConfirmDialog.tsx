@@ -36,7 +36,7 @@ export function ConfirmDialog({
       ref={ref}
       aria-labelledby="dlg-title"
       onClose={onClose}
-      className="m-auto rounded-xl p-6"
+      className="bg-card text-ink m-auto rounded-xl p-6"
     >
       <h2 id="dlg-title" className="text-lg font-semibold">
         {title}

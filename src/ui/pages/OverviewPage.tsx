@@ -5,6 +5,7 @@ import { ringRows } from '../chartData'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { CashFlowChart } from '../components/CashFlowChart'
 import { SpendingDonut } from '../components/SpendingDonut'
+import { CategoryIcon } from '../components/CategoryIcon'
 import { DataTable } from '../components/DataTable'
 import { Panel } from '../components/Panel'
 import { fmt, pct } from '../format'
@@ -69,7 +70,7 @@ export function OverviewPage() {
         {stats.map(([label, value, detail]) => (
           <div
             key={label}
-            className="border-line grid gap-1 rounded-xl border bg-white p-4"
+            className="border-line grid gap-1 rounded-xl border bg-card p-4"
           >
             <span className="text-muted text-sm">{label}</span>
             <strong className="text-2xl">{value}</strong>
@@ -113,7 +114,10 @@ export function OverviewPage() {
           rows={r.breakdown.map((row) => ({
             key: row.name,
             cells: [
-              row.name,
+              <span className="flex items-center gap-2">
+                <CategoryIcon name={row.name} />
+                {row.name}
+              </span>,
               fmt(row.planned),
               fmt(r.active ? row.actual : null),
               fmt(r.active ? row.planned - row.actual : null),
