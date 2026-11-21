@@ -224,6 +224,7 @@ Status: done (committed, not pushed). Schema v5: `accounts[]`, `transfers[]`, op
 - Done when balances reconcile to the sum of transactions and transfers never change the spending totals (golden fixtures extended).
 
 ### 10.7 Platform polish (2 days)
+Status: PWA and currency display done (committed, not pushed); app lock, split transactions and tags deliberately skipped (optional in this plan, no demand yet). PWA: hand-written `public/sw.js` (precaches the build's own files, network-first navigations with the cached shell offline, cache-first assets), update notice with Reload, Install button when the browser offers it; verified offline in Playwright against the production build. Currency: schema v6 `currency` (CAD default, 10 codes), display and Excel formats only, no conversion. Bump `VERSION` in `sw.js` if cached non-hashed files (icons) change. Not yet verified: install prompt on a real device, Lighthouse on a deployed build with the worker.
 - PWA: manifest, icons, service worker, offline shell, install prompt.
 - Optional multi-currency display (one base currency per ledger, user-selectable symbol and locale); no FX conversion.
 - Optional app lock (passcode over a locally encrypted blob) if the user wants privacy on shared devices.
@@ -263,4 +264,4 @@ Backend and accounts, multi-currency, CSV or bank import, recurring-transaction 
 
 ## 9. Status
 
-Phases 0-9 done and pushed; CI (lint, typecheck, unit, build, e2e with axe in light and dark) is green. Remaining: hosting, a Lighthouse pass, and a LibreOffice recalculation check on a machine where it runs. Two Phase-2 decisions: floats kept (not cents), live Excel formulas kept. Added beyond plan: theming, category icons, JSON backup/restore, Google Drive saving. Phase 10: 10.1-10.6 done (10.6 local, not pushed); 10.0 verified except Drive round-trip and LibreOffice recalculation; 10.7 (PWA, multi-currency display, optional app lock) is the next unstarted item.
+Phases 0-9 done and pushed; CI (lint, typecheck, unit, build, e2e with axe in light and dark) is green. Remaining: hosting, a Lighthouse pass, and a LibreOffice recalculation check on a machine where it runs. Two Phase-2 decisions: floats kept (not cents), live Excel formulas kept. Added beyond plan: theming, category icons, JSON backup/restore, Google Drive saving. Phase 10: 10.1-10.6 done (10.6 local, not pushed); 10.0 verified except Drive round-trip and LibreOffice recalculation; 10.7 PWA and currency display done locally (app lock skipped); next is to deploy and verify on a device.

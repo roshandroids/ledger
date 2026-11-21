@@ -22,6 +22,7 @@ export function starter(sample = true): State {
     target: sample ? 1500 : '',
     gym: 'none',
     rollover: false,
+    currency: 'CAD',
     budget: (sample ? sampleBudget : []).map(
       ([name, category, amount, type = 'Expense']) => ({
         name,

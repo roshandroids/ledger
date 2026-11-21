@@ -24,7 +24,8 @@ type Row = {
   accounts: Account
   transfers: Transfer
 }
-type SettingKey = 'pay' | 'cadence' | 'target' | 'gym' | 'month' | 'rollover'
+type SettingKey =
+  'pay' | 'cadence' | 'target' | 'gym' | 'month' | 'rollover' | 'currency'
 
 export interface LedgerStore {
   state: State

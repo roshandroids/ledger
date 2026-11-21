@@ -246,3 +246,27 @@ test('imports a bank CSV once and a re-import adds nothing; preview passes axe',
     page.getByText(/0 ready · 2 already in your ledger/),
   ).toBeVisible()
 })
+
+test('works offline after the first visit and installs a service worker', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/budget')
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready
+  })
+  // The worker precaches on install and takes control on activate.
+  await expect
+    .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
+    .toBe(true)
+  await context.setOffline(true)
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Budget' }),
+  ).toBeVisible()
+  await page.goto('/transactions')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Transactions' }),
+  ).toBeVisible()
+  await context.setOffline(false)
+})

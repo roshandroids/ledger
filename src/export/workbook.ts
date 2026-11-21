@@ -1,8 +1,9 @@
 import ExcelJS from 'exceljs'
-import { frequencies, report } from '../domain'
+import { cashFormat, frequencies, report } from '../domain'
 import type { State } from '../domain'
 
-const CASH = '"$"#,##0.00;("$"#,##0.00)'
+/** Set from the ledger currency at the start of each build (builds are synchronous). */
+let CASH = '"$"#,##0.00;("$"#,##0.00)'
 const PERCENT = '0.0%'
 
 /** Column keys per sheet, in order. Formulas address cells only through these maps. */
@@ -161,6 +162,7 @@ function addSheet(wb: ExcelJS.Workbook, sheet: Sheet) {
 }
 
 export function buildWorkbook(state: State): ExcelJS.Workbook {
+  CASH = cashFormat(state.currency)
   const r = report(state)
   const goalName = new Map(state.goals.map((g) => [g.id, g.name]))
   const S = (k: (typeof rows.Settings)[number]) => rowCell('Settings', k)
@@ -177,7 +179,7 @@ export function buildWorkbook(state: State): ExcelJS.Workbook {
     `SUMIFS(${txRange},${txGoal},"general",${txType},"${type}")`
 
   const overview: Item[][] = [
-    ['Monthly summary (CAD)', 'Planned', 'Actual'],
+    [`Monthly summary (${state.currency})`, 'Planned', 'Actual'],
     ['Report month', plain(state.month, S('month'))],
     [
       'Take-home income',
@@ -263,7 +265,7 @@ export function buildWorkbook(state: State): ExcelJS.Workbook {
   ]
 
   const settings: Item[][] = [
-    ['Budget settings (CAD)', 'Value'],
+    [`Budget settings (${state.currency})`, 'Value'],
     ['Report month', state.month],
     ['Take-home pay per payment', cash(state.pay)],
     ['Pay frequency', state.cadence],

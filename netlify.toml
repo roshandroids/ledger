@@ -23,3 +23,14 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     # Required for Google sign-in popups (Drive saving).
     Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+
+# The service worker must always be revalidated so updates are picked up.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"

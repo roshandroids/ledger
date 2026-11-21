@@ -4,6 +4,7 @@ import { useLedger } from '../../store/useLedger'
 import { DownloadButton } from '../DownloadButton'
 import { Notice } from '../components/Notice'
 import { pages } from '../pages/pages'
+import { usePwa } from '../../pwa'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 
@@ -16,6 +17,7 @@ export function Shell() {
   const sample = useLedger((s) => s.state.sample)
   const setSetting = useLedger((s) => s.setSetting)
   const startBlank = useLedger((s) => s.startBlank)
+  const { updateReady, canInstall, install } = usePwa()
   if (!page) return <Navigate to="/overview" replace />
   return (
     <div className="min-h-screen pb-20 md:grid md:grid-cols-[222px_minmax(0,1fr)] md:pb-0">
@@ -25,13 +27,39 @@ export function Shell() {
           title={page.title}
           month={month}
           onMonthChange={(m) => setSetting('month', m)}
-          actions={<DownloadButton />}
+          actions={
+            <>
+              <DownloadButton />
+              {canInstall && (
+                <button
+                  onClick={install}
+                  className="border-line rounded-lg border px-3 py-2 text-sm font-semibold"
+                >
+                  Install app
+                </button>
+              )}
+            </>
+          }
         />
         <div className="grid gap-4 p-4 md:gap-5 md:p-9">
           {!canSave && (
             <Notice>
               Browser storage is unavailable. Download Excel before closing this
               page.
+            </Notice>
+          )}
+          {updateReady && (
+            <Notice
+              action={
+                <button
+                  onClick={() => location.reload()}
+                  className="border-line rounded-lg border bg-card px-3 py-2 text-sm font-semibold"
+                >
+                  Reload
+                </button>
+              }
+            >
+              A new version of Ledger is ready.
             </Notice>
           )}
           {sample && (

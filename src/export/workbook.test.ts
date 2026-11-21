@@ -89,6 +89,23 @@ const value = (c: ExcelJS.Cell) =>
     ? c.value.result
     : c.value
 
+describe('workbook currency', () => {
+  it('labels headers and number formats with the ledger currency', () => {
+    const wb = buildWorkbook({ ...starter(), currency: 'USD' })
+    const overview = wb.getWorksheet('Overview')!
+    const text = JSON.stringify(overview.getSheetValues())
+    expect(text).toContain('Monthly summary (USD)')
+    let formats = ''
+    overview.eachRow((row) =>
+      row.eachCell((c) => {
+        formats += c.numFmt ?? ''
+      }),
+    )
+    expect(formats).toContain('"US$"#,##0.00')
+    expect(formats).not.toContain('"$"#')
+  })
+})
+
 describe('workbook', () => {
   const state = sample()
   const r = report(state)

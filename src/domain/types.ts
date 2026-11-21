@@ -98,6 +98,8 @@ export interface State {
   gym: GymId
   /** Carry unspent category budget into the next month. */
   rollover: boolean
+  /** ISO 4217 code used to display amounts; no conversion is done. */
+  currency: string
   budget: BudgetItem[]
   transactions: Transaction[]
   recurring: Recurring[]

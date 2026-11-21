@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { frequencies, report } from '../../domain'
+import { currencies, frequencies, report } from '../../domain'
 import type { Cadence } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { AddButton, RemoveButton } from '../components/AddButton'
@@ -61,6 +61,18 @@ export function BudgetPage() {
             />
           </label>
         </div>
+        <label className="mt-4 grid max-w-xs gap-1 text-sm">
+          Currency (display only, no conversion)
+          <Select
+            label="Currency"
+            value={state.currency}
+            options={currencies.map((c): [string, string] => [
+              c.code,
+              `${c.code} · ${c.name}`,
+            ])}
+            onChange={(v) => setSetting('currency', v)}
+          />
+        </label>
         <label className="mt-4 flex items-center gap-2 text-sm">
           <input
             type="checkbox"

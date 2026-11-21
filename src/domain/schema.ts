@@ -1,9 +1,10 @@
 import { z } from 'zod'
 import { frequencies, transactionTypes } from './constants'
+import { currencies } from './currencies'
 import { starter } from './starter'
 import type { State } from './types'
 
-export const SCHEMA_VERSION = 5
+export const SCHEMA_VERSION = 6
 
 const money = z.union([z.string(), z.number()])
 const cadence = z.enum(Object.keys(frequencies) as [string, ...string[]])
@@ -87,6 +88,9 @@ const stateSchema = z.object({
   target: money.catch(''),
   gym: z.enum(['none', 'fit', 'good']).catch('none'),
   rollover: z.boolean().catch(false),
+  currency: z
+    .enum(currencies.map((c) => c.code) as [string, ...string[]])
+    .catch('CAD'),
   budget: z.array(budgetItem).catch([]),
   transactions: z.array(transaction).catch([]),
   recurring: z.array(recurring).catch([]),

@@ -46,6 +46,7 @@ describe('localStorage adapter', () => {
     expect(state).toEqual({
       ...v1,
       rollover: false,
+      currency: 'CAD',
       recurring: [],
       accounts: [],
       transfers: [],

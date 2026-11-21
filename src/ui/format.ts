@@ -1,11 +1,19 @@
-const money = new Intl.NumberFormat('en-CA', {
-  style: 'currency',
-  currency: 'CAD',
-})
 const percent = new Intl.NumberFormat('en-CA', {
   style: 'percent',
   maximumFractionDigits: 1,
 })
+const make = (currency: string) =>
+  new Intl.NumberFormat('en-CA', { style: 'currency', currency })
+let money = make('CAD')
+
+/** Switch the display currency (called when the ledger's currency changes). */
+export function setCurrency(code: string) {
+  try {
+    money = make(code)
+  } catch {
+    money = make('CAD')
+  }
+}
 
 /** null renders as an em dash (no data). Avoids "-$0.00". */
 export const fmt = (v: number | null) =>

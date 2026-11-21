@@ -1,9 +1,11 @@
 import { motion } from 'motion/react'
 import { NavLink } from 'react-router'
+import { useLedger } from '../../store/useLedger'
 import { pages } from '../pages/pages'
 
 /** Bottom tab bar on phones; sticky side rail from md up. */
 export function Sidebar() {
+  const currency = useLedger((s) => s.state.currency)
   return (
     <aside className="bg-nav fixed inset-x-0 bottom-0 z-20 border-t border-white/10 text-white md:sticky md:top-0 md:flex md:h-screen md:flex-col md:border-t-0 md:px-5 md:pt-9 md:pb-6">
       <NavLink
@@ -41,7 +43,7 @@ export function Sidebar() {
       </nav>
       <div className="mt-auto hidden items-center gap-2 border-t border-slate-600 pt-4 text-xs text-slate-300 md:flex">
         <strong className="rounded bg-slate-700 px-1.5 py-1 text-[0.7rem]">
-          CAD
+          {currency}
         </strong>
         <span>Saved on this device</span>
       </div>
