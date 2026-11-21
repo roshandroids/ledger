@@ -54,6 +54,8 @@ export interface State {
   cadence: Cadence
   target: MoneyInput
   gym: GymId
+  /** Carry unspent category budget into the next month. */
+  rollover: boolean
   budget: BudgetItem[]
   transactions: Transaction[]
   goals: Goal[]

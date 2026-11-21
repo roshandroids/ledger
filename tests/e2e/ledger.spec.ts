@@ -127,12 +127,55 @@ test('old #budget bookmarks redirect', async ({ page }) => {
 })
 
 for (const scheme of ['light', 'dark'] as const)
-  for (const path of ['overview', 'budget', 'transactions', 'goals']) {
+  for (const path of [
+    'overview',
+    'budget',
+    'transactions',
+    'trends',
+    'goals',
+  ]) {
     test(`axe (${scheme}): no serious violations on /${path}`, async ({
       page,
     }) => {
       // Reduced motion avoids measuring contrast mid-fade.
       await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: scheme })
+      // Seed data so filters, charts and the carried-over column are on the page.
+      await page.addInitScript(() => {
+        const t = (date: string, category: string, amount: number) => ({
+          date,
+          type: 'Expense',
+          category,
+          amount,
+          goal: '',
+          notes: 'n',
+        })
+        localStorage.setItem(
+          'ledger-budget-v2',
+          JSON.stringify({
+            version: 3,
+            state: {
+              month: '2026-03',
+              pay: 2200,
+              rollover: true,
+              budget: [
+                {
+                  name: 'Food',
+                  category: 'Food',
+                  type: 'Expense',
+                  cadence: 'Monthly',
+                  amount: 300,
+                  due: '',
+                },
+              ],
+              transactions: [
+                t('2026-01-04', 'Food', 120),
+                t('2026-02-04', 'Food', 80),
+                t('2026-03-04', 'Fun', 30),
+              ],
+            },
+          }),
+        )
+      })
       await page.goto('/' + path)
       await page.getByRole('heading', { level: 1 }).waitFor()
       const { violations } = await new AxeBuilder({ page }).analyze()

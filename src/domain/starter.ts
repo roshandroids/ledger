@@ -21,6 +21,7 @@ export function starter(sample = true): State {
     cadence: 'Biweekly',
     target: sample ? 1500 : '',
     gym: 'none',
+    rollover: false,
     budget: (sample ? sampleBudget : []).map(
       ([name, category, amount, type = 'Expense']) => ({
         name,

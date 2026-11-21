@@ -1,4 +1,10 @@
-import { ArrowLeftRight, LayoutDashboard, Target, Wallet } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  LayoutDashboard,
+  Target,
+  TrendingUp,
+  Wallet,
+} from 'lucide-react'
 
 export const pages = [
   {
@@ -14,5 +20,6 @@ export const pages = [
     nav: 'Transactions',
     icon: ArrowLeftRight,
   },
+  { path: 'trends', title: 'Trends', nav: 'Trends', icon: TrendingUp },
   { path: 'goals', title: 'Savings goals', nav: 'Savings goals', icon: Target },
 ] as const

@@ -48,6 +48,69 @@ describe('Budget', () => {
   })
 })
 
+describe('Trends and rollover', () => {
+  const seed = (rollover: boolean) =>
+    useLedger.setState({
+      state: {
+        ...starter(false),
+        month: '2026-03',
+        rollover,
+        budget: [
+          {
+            name: 'Food',
+            category: 'Food',
+            type: 'Expense',
+            cadence: 'Monthly',
+            amount: 100,
+            due: '',
+          },
+        ],
+        transactions: [
+          {
+            date: '2026-02-04',
+            type: 'Expense',
+            category: 'Food',
+            amount: 40,
+            goal: '',
+            notes: '',
+          },
+          {
+            date: '2026-03-04',
+            type: 'Expense',
+            category: 'Food',
+            amount: 10,
+            goal: '',
+            notes: '',
+          },
+        ],
+      },
+      canSave: true,
+    })
+
+  it('lists each month in the trends table', () => {
+    seed(false)
+    at('/trends')
+    expect(screen.getByRole('table', { name: /by month/ })).toHaveTextContent(
+      'Feb 26',
+    )
+    expect(
+      screen.getByText('Choose a category to compare.'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows carried-over budget only when rollover is on', () => {
+    seed(false)
+    const { unmount } = at('/overview')
+    expect(screen.queryByText('Carried over')).toBeNull()
+    unmount()
+    seed(true)
+    at('/overview')
+    // Feb leftover 60 carries into March: remaining = 100 + 60 - 10.
+    expect(screen.getByText('Carried over')).toBeInTheDocument()
+    expect(screen.getByText('$150.00')).toBeInTheDocument()
+  })
+})
+
 describe('Transaction filters', () => {
   const seed = () => {
     const s = useLedger.getState()

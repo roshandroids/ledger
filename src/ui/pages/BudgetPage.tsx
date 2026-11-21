@@ -60,6 +60,14 @@ export function BudgetPage() {
             />
           </label>
         </div>
+        <label className="mt-4 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={state.rollover}
+            onChange={(e) => setSetting('rollover', e.target.checked)}
+          />
+          Carry unspent category budget into the next month
+        </label>
       </Panel>
       <Panel
         title="Budget items"

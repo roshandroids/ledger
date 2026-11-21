@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { report } from '../../domain'
+import { report, rolloverCarry } from '../../domain'
 import { useLedger } from '../../store/useLedger'
 import { ringRows } from '../chartData'
 import { AnimatedNumber } from '../components/AnimatedNumber'
@@ -13,6 +13,12 @@ import { fmt, pct } from '../format'
 export function OverviewPage() {
   const state = useLedger((s) => s.state)
   const r = useMemo(() => report(state), [state])
+  const carry = useMemo(
+    () => (state.rollover ? rolloverCarry(state) : null),
+    [state],
+  )
+  const carried = (name: string) =>
+    carry?.get(name.toLocaleLowerCase('en-CA')) ?? 0
   const stats: [string, string, string][] = [
     ['Take-home income', fmt(r.planIncome), 'Actual ' + fmt(r.actualIncome)],
     [
@@ -109,7 +115,13 @@ export function OverviewPage() {
       >
         <DataTable
           caption="Category breakdown"
-          headers={['Category', 'Planned', 'Actual', 'Plan remaining']}
+          headers={[
+            'Category',
+            'Planned',
+            ...(carry ? ['Carried over'] : []),
+            'Actual',
+            'Plan remaining',
+          ]}
           empty="Add expenses or transactions to see the category breakdown."
           rows={r.breakdown.map((row) => ({
             key: row.name,
@@ -119,8 +131,11 @@ export function OverviewPage() {
                 {row.name}
               </span>,
               fmt(row.planned),
+              ...(carry ? [fmt(carried(row.name))] : []),
               fmt(r.active ? row.actual : null),
-              fmt(r.active ? row.planned - row.actual : null),
+              fmt(
+                r.active ? row.planned + carried(row.name) - row.actual : null,
+              ),
             ],
           }))}
         />

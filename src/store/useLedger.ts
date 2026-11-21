@@ -11,7 +11,7 @@ import type { Storage } from '../storage/Storage'
 
 export type Group = 'budget' | 'transactions' | 'goals'
 type Row = { budget: BudgetItem; transactions: Transaction; goals: Goal }
-type SettingKey = 'pay' | 'cadence' | 'target' | 'gym' | 'month'
+type SettingKey = 'pay' | 'cadence' | 'target' | 'gym' | 'month' | 'rollover'
 
 export interface LedgerStore {
   state: State

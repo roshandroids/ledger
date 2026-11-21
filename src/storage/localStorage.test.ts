@@ -19,8 +19,10 @@ describe('localStorage adapter', () => {
   })
 
   it('migrates a v1 blob without data loss and keeps v1', () => {
+    // A real v1 blob has no `rollover` key.
+    const { rollover: _omit, ...base } = starter(false)
     const v1 = {
-      ...starter(false),
+      ...base,
       month: '2026-02',
       pay: '2500',
       gym: 'fit',
@@ -41,7 +43,7 @@ describe('localStorage adapter', () => {
     }
     localStorage.setItem(V1_KEY, JSON.stringify(v1))
     const { state } = createLocalStorage().load()
-    expect(state).toEqual(v1)
+    expect(state).toEqual({ ...v1, rollover: false })
     expect(localStorage.getItem(V1_KEY)).toBe(JSON.stringify(v1))
     expect(localStorage.getItem(V2_KEY)).not.toBeNull()
   })

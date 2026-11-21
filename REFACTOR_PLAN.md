@@ -178,6 +178,7 @@ Status: done. Notes already existed (`notes`), so no schema bump. Amount sort pu
 - Done when a 1,000-row ledger filters without visible lag and keyboard use works throughout.
 
 ### 10.2 Multi-month history and trends (2-3 days)
+Status: done except "copy last month's budget": the budget is not per month (only one-time items carry a `due` month), so there is nothing to copy. Schema is now v3 (`rollover`, default false; v1 and v2 blobs load unchanged). Rollover is shown on Overview only; the Excel export does not include it yet.
 - Month-by-month report series from `report()` (no new math): income, spending, net savings, savings rate.
 - Trends page: line/bar chart over the last 3, 6 or 12 months; per-category trend; table alternative for a11y.
 - "Copy last month's budget" and "Start next month" actions.
