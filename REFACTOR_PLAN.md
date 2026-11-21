@@ -79,7 +79,7 @@ UI and storage rules, taken from `app.js`:
 
 | Issue | Where | Fix |
 |---|---|---|
-| Money stored as floats and rounded ad hoc | `model.js` | Integer cents internally, format at the edge. Golden tests must allow for the one intended rounding difference (see risks). |
+| Money stored as floats and rounded ad hoc | `model.js` | **Decision (Phase 2):** kept legacy float math for exact parity (golden tests match to 1e-9). Revisit integer cents as a separate, deliberate change. |
 | Spreadsheet formulas use hardcoded refs (`B3`, `C10`, `Settings!B7`) | `export.js` | Build refs from a row-index map so reordering can't break them. |
 | Column letter via `fromCharCode(65+i)` breaks past column Z | `export.js` | Use exceljs addressing. |
 | `alert()` for blocked goal removal | `app.js` | `ConfirmDialog` / inline error. |
