@@ -61,6 +61,8 @@ export interface Account {
   kind: AccountKind
   /** Balance before any recorded transaction; the amount owed for Credit card and Loan. */
   opening: MoneyInput
+  /** ISO code of this account's money; empty means the ledger currency. */
+  currency?: string
   /** Annual interest rate in percent; debts only. */
   rate: MoneyInput
   /** Planned monthly payment; debts only. */
@@ -109,6 +111,8 @@ export interface State {
   rollover: boolean
   /** ISO 4217 code used to display amounts; no conversion is done. */
   currency: string
+  /** Ledger-currency value of one unit of each other currency, entered by the user. */
+  rates?: Record<string, number>
   budget: BudgetItem[]
   transactions: Transaction[]
   recurring: Recurring[]

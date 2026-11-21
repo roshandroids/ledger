@@ -342,3 +342,42 @@ test('tags filter the list and a split moves spending between categories', async
     page.getByRole('button', { name: 'Split transaction' }),
   ).toContainText('(1)')
 })
+
+test('a USD account needs a rate and converts into net worth', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'ledger-budget-v2',
+      JSON.stringify({
+        version: 3,
+        state: {
+          month: '2026-03',
+          currency: 'CAD',
+          accounts: [
+            { id: 'c', name: 'Main', kind: 'Chequing', opening: 1000 },
+            {
+              id: 'u',
+              name: 'US',
+              kind: 'Savings',
+              opening: 200,
+              currency: 'USD',
+            },
+          ],
+        },
+      }),
+    )
+  })
+  await page.goto('/accounts')
+  await expect(
+    page.getByText('No rate set: USD is counted 1 to 1.'),
+  ).toBeVisible()
+  await ctl(page, '1 USD in CAD').fill('1.5')
+  await expect(page.getByText('No rate set')).toHaveCount(0)
+  // 1000 + 200 * 1.5
+  await expect(
+    page
+      .getByText('Net worth', { exact: true })
+      .locator('xpath=following-sibling::strong'),
+  ).toHaveText('$1,300.00')
+})

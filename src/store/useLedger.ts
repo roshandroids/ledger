@@ -25,7 +25,14 @@ type Row = {
   transfers: Transfer
 }
 type SettingKey =
-  'pay' | 'cadence' | 'target' | 'gym' | 'month' | 'rollover' | 'currency'
+  | 'pay'
+  | 'cadence'
+  | 'target'
+  | 'gym'
+  | 'month'
+  | 'rollover'
+  | 'currency'
+  | 'rates'
 
 export interface LedgerStore {
   state: State

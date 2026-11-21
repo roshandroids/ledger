@@ -8,6 +8,8 @@ import {
   netWorthSeries,
   payoff,
   payoffPlan,
+  currencies,
+  rateFor,
 } from '../../domain'
 import type { Strategy } from '../../domain'
 import type { AccountKind } from '../../domain'
@@ -21,7 +23,7 @@ import { Panel } from '../components/Panel'
 import { Select } from '../components/Select'
 import { TextInput } from '../components/TextInput'
 import { TrendChart } from '../components/TrendChart'
-import { fmt } from '../format'
+import { fmt, fmtIn } from '../format'
 import { palette } from '../chartData'
 import { useRowFocus } from '../useRowFocus'
 
@@ -36,7 +38,7 @@ const monthLabel = (m: string) => {
 
 export function AccountsPage() {
   const state = useLedger((s) => s.state)
-  const { updateRow, addRow, removeRow } = useLedger.getState()
+  const { updateRow, addRow, removeRow, setSetting } = useLedger.getState()
   const [blocked, setBlocked] = useState(false)
   const [extra, setExtra] = useState('')
   const {
@@ -68,6 +70,13 @@ export function AccountsPage() {
     a.id,
     a.name || 'Unnamed account',
   ])
+  const foreign = [
+    ...new Set(
+      state.accounts
+        .map((a) => a.currency || state.currency)
+        .filter((c) => c !== state.currency),
+    ),
+  ]
   const debts = balances.filter(
     (b) => isDebt(b.account) && b.owed !== null && b.owed > 0,
   )
@@ -143,6 +152,7 @@ export function AccountsPage() {
             headers={[
               'Name',
               'Kind',
+              'Currency',
               'Opening balance or amount owed',
               'Interest rate (% a year)',
               'Monthly payment',
@@ -167,6 +177,17 @@ export function AccountsPage() {
                     options={accountKinds}
                     onChange={(v) =>
                       updateRow('accounts', i, { kind: v as AccountKind })
+                    }
+                  />,
+                  <Select
+                    label="Account currency"
+                    value={a.currency || state.currency}
+                    options={currencies.map((c): [string, string] => [
+                      c.code,
+                      c.code,
+                    ])}
+                    onChange={(currency) =>
+                      updateRow('accounts', i, { currency })
                     }
                   />,
                   <MoneyInput
@@ -196,7 +217,9 @@ export function AccountsPage() {
                   ) : (
                     '—'
                   ),
-                  b.owed !== null ? `${fmt(b.owed)} owed` : fmt(b.signed),
+                  b.owed !== null
+                    ? `${fmtIn(b.currency, b.owed)} owed`
+                    : fmtIn(b.currency, b.signed),
                   <RemoveButton
                     label="account"
                     onClick={() => onRemoveAccount(i)}
@@ -207,6 +230,35 @@ export function AccountsPage() {
           />
         </div>
       </Panel>
+      {foreign.length > 0 && (
+        <Panel
+          title="Exchange rates"
+          subtitle={`Enter what one unit of each currency is worth in ${state.currency}. Reports, net worth and budgets use these rates. Amounts on an account's transactions are in that account's currency.`}
+        >
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {foreign.map((code) => (
+              <div key={code} className="grid gap-1">
+                <MoneyInput
+                  label={`1 ${code} in ${state.currency}`}
+                  step="0.0001"
+                  value={state.rates?.[code] ?? ''}
+                  onChange={(v) =>
+                    setSetting('rates', {
+                      ...state.rates,
+                      [code]: Number(v) > 0 ? Number(v) : 0,
+                    } as Record<string, number>)
+                  }
+                />
+                {!(state.rates?.[code] ?? 0) && (
+                  <small className="text-negative">
+                    No rate set: {code} is counted 1 to 1.
+                  </small>
+                )}
+              </div>
+            ))}
+          </div>
+        </Panel>
+      )}
       <Panel
         title="Transfers"
         subtitle="Move money between accounts, such as paying a card from chequing. Transfers never count as income or spending."
@@ -282,26 +334,33 @@ export function AccountsPage() {
                 key: a.id,
                 cells: [
                   a.name || 'Unnamed account',
-                  fmt(owed),
-                  a.payment === '' ? '—' : fmt(Number(a.payment)),
+                  fmtIn(a.currency || state.currency, owed ?? 0),
+                  a.payment === ''
+                    ? '—'
+                    : fmtIn(a.currency || state.currency, Number(a.payment)),
                   plan
                     ? `${monthLabel(addMonths(state.month, plan.months))} (${plan.months} months)`
                     : a.payment === ''
                       ? 'Set a monthly payment'
                       : 'Payment does not cover the interest',
-                  plan ? fmt(plan.interest) : '—',
+                  plan
+                    ? fmtIn(a.currency || state.currency, plan.interest)
+                    : '—',
                 ],
               }
             })}
           />
           <Strategies
-            debts={debts.map(({ account: a, owed }) => ({
-              id: a.id,
-              name: a.name || 'Unnamed account',
-              owed: owed ?? 0,
-              rate: Number(a.rate) || 0,
-              payment: Number(a.payment) || 0,
-            }))}
+            debts={debts.map(({ account: a, owed }) => {
+              const k = rateFor(state, a.currency)
+              return {
+                id: a.id,
+                name: a.name || 'Unnamed account',
+                owed: (owed ?? 0) * k,
+                rate: Number(a.rate) || 0,
+                payment: (Number(a.payment) || 0) * k,
+              }
+            })}
             month={state.month}
             extra={extra}
             onExtra={setExtra}

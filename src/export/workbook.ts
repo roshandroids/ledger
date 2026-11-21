@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs'
 import {
   accountBalances,
+  baseTransactions,
   cashFormat,
   frequencies,
   isDebt,
@@ -167,7 +168,9 @@ function addSheet(wb: ExcelJS.Workbook, sheet: Sheet) {
   })
 }
 
-export function buildWorkbook(state: State): ExcelJS.Workbook {
+export function buildWorkbook(input: State): ExcelJS.Workbook {
+  // Report sheets are in the ledger currency, so foreign-account rows are converted.
+  const state: State = { ...input, transactions: baseTransactions(input) }
   CASH = cashFormat(state.currency)
   const r = report(state)
   const goalName = new Map(state.goals.map((g) => [g.id, g.name]))
@@ -399,24 +402,32 @@ export function buildWorkbook(state: State): ExcelJS.Workbook {
 
   // Static values (no formulas): these sheets are for reading and filtering.
   const accountName = new Map(state.accounts.map((a) => [a.id, a.name]))
-  const balances = accountBalances(state, state.month)
+  const balances = accountBalances(input, state.month)
   const accounts: Item[][] = [
     [
       'Account',
       'Kind',
+      'Currency',
       'Opening',
       `Balance end of ${state.month}`,
       'APR %',
       'Monthly payment',
     ],
-    ...balances.map(({ account: a, signed }): Item[] => [
-      a.name,
-      a.kind,
-      cash(a.opening),
-      cash(signed),
-      isDebt(a) ? plain(num(a.rate)) : null,
-      isDebt(a) ? cash(a.payment) : null,
-    ]),
+    ...balances.map(({ account: a, signed, currency }): Item[] => {
+      const own = (v: unknown): Cell => ({
+        value: num(v),
+        format: cashFormat(currency),
+      })
+      return [
+        a.name,
+        a.kind,
+        currency,
+        own(a.opening),
+        own(signed),
+        isDebt(a) ? plain(num(a.rate)) : null,
+        isDebt(a) ? own(a.payment) : null,
+      ]
+    }),
   ]
   const transfers: Item[][] = [
     ['Date', 'From', 'To', 'Amount', 'Notes'],
@@ -471,7 +482,7 @@ export function buildWorkbook(state: State): ExcelJS.Workbook {
   if (state.accounts.length) {
     addSheet(wb, {
       name: 'Accounts',
-      widths: [28, 16, 17, 26, 12, 18],
+      widths: [28, 16, 10, 17, 26, 12, 18],
       data: accounts,
     })
     addSheet(wb, {

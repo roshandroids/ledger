@@ -1,4 +1,5 @@
 import { frequencies, gymOptions } from './constants'
+import { baseTransactions } from './currencies'
 import type {
   CategoryRow,
   Report,
@@ -66,7 +67,7 @@ export function report(state: State): Report {
     ...item,
     monthly: monthly(item.amount, item.cadence, item.due, state.month),
   }))
-  const valid = state.transactions.filter(isValid)
+  const valid = baseTransactions(state).filter(isValid)
   const current = valid.filter((row) => row.date.startsWith(state.month + '-'))
   const active = current.length > 0
 

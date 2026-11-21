@@ -264,7 +264,7 @@ describe.skipIf(!soffice)('LibreOffice recalculation (local only)', () => {
     )
     const a = book.getWorksheet('Accounts')!
     expect(a.getCell('A3').value).toBe('Visa')
-    expect(a.getCell('E3').value).toBe(19.99)
+    expect(a.getCell('F3').value).toBe(19.99)
     expect(book.getWorksheet('Transfers')!.getCell('B2').value).toBe('Main')
     expect(book.getWorksheet('Recurring')!.getCell('A2').value).toBe('Rent')
   })

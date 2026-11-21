@@ -1,3 +1,4 @@
+import { rateFor } from './currencies'
 import { addMonths } from './trends'
 import type { Account, AccountKind, State, Transaction } from './types'
 
@@ -36,6 +37,8 @@ export function accountOf(state: State, t: Transaction): string | null {
 
 export interface AccountBalance {
   account: Account
+  /** The account's own currency (the ledger currency when unset). */
+  currency: string
   /** Positive is money you have, negative is money you owe. */
   signed: number
   /** Amount owed for debts, otherwise null. */
@@ -64,22 +67,38 @@ export function accountBalances(state: State, month: string): AccountBalance[] {
       x.date > end
     )
       continue
+    const from = state.accounts.find((a) => a.id === x.from)
+    const to = state.accounts.find((a) => a.id === x.to)
     if (signed.has(x.from)) signed.set(x.from, signed.get(x.from)! - amount)
-    if (signed.has(x.to)) signed.set(x.to, signed.get(x.to)! + amount)
+    if (signed.has(x.to)) {
+      // The amount is in the sending account's currency.
+      const k = rateFor(state, from?.currency) / rateFor(state, to?.currency)
+      signed.set(x.to, signed.get(x.to)! + amount * k)
+    }
   }
   return state.accounts.map((account) => {
     const value = round2(signed.get(account.id) ?? 0)
-    return { account, signed: value, owed: isDebt(account) ? -value : null }
+    return {
+      account,
+      currency: account.currency || state.currency,
+      signed: value,
+      owed: isDebt(account) ? -value : null,
+    }
   })
 }
 
 export function netWorth(state: State, month: string) {
   const rows = accountBalances(state, month)
+  const base = (r: AccountBalance, v: number) => v * rateFor(state, r.currency)
   const assets = round2(
-    rows.filter((r) => r.owed === null).reduce((s, r) => s + r.signed, 0),
+    rows
+      .filter((r) => r.owed === null)
+      .reduce((s, r) => s + base(r, r.signed), 0),
   )
   const liabilities = round2(
-    rows.filter((r) => r.owed !== null).reduce((s, r) => s + (r.owed ?? 0), 0),
+    rows
+      .filter((r) => r.owed !== null)
+      .reduce((s, r) => s + base(r, r.owed ?? 0), 0),
   )
   return { assets, liabilities, net: round2(assets - liabilities) }
 }
