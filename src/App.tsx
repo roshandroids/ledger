@@ -24,8 +24,8 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <Routes>
+        <Route path="/" element={<Navigate to={legacy()} replace />} />
         <Route element={<Shell />}>
-          <Route index element={<Navigate to={legacy()} replace />} />
           {pages.map((p) => (
             <Route key={p.path} path={p.path} element={elements[p.path]} />
           ))}

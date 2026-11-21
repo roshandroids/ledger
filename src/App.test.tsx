@@ -50,7 +50,7 @@ it('every nav link and the month picker are keyboard reachable', async () => {
     )
     await userEvent.tab()
   }
-  expect(seen).toContain('Report month')
+  expect([...seen].some((t) => t.startsWith('Report month'))).toBe(true)
   expect([...seen].some((t) => t.includes('Savings goals'))).toBe(true)
 })
 

@@ -83,14 +83,13 @@ export function MonthPicker({
   onChange(month: string): void
 }) {
   const parsed = parse(value)
+  const shown = parsed
+    ? long.format(new Date(parsed.year, parsed.month - 1, 1))
+    : value || 'Pick a month'
   return (
     <Popover>
-      <PopoverButton aria-label={label} className={triggerClass}>
-        <span className="truncate">
-          {parsed
-            ? long.format(new Date(parsed.year, parsed.month - 1, 1))
-            : value || 'Pick a month'}
-        </span>
+      <PopoverButton aria-label={`${label}, ${shown}`} className={triggerClass}>
+        <span className="truncate">{shown}</span>
         <CalendarDays
           size={16}
           aria-hidden="true"

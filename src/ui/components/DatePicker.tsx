@@ -27,12 +27,11 @@ export function DatePicker({
   onChange(iso: string): void
 }) {
   const date = parse(value)
+  const shown = date ? show.format(date) : value || 'Pick a date'
   return (
     <Popover>
-      <PopoverButton aria-label={label} className={triggerClass}>
-        <span className="truncate">
-          {date ? show.format(date) : value || 'Pick a date'}
-        </span>
+      <PopoverButton aria-label={`${label}, ${shown}`} className={triggerClass}>
+        <span className="truncate">{shown}</span>
         <CalendarDays
           size={16}
           aria-hidden="true"

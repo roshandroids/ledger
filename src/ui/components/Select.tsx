@@ -22,7 +22,10 @@ export function Select({ label, value, options, onChange }: Props) {
   const current = items.find(([v]) => v === value)
   return (
     <Listbox value={value} onChange={onChange}>
-      <ListboxButton aria-label={label} className={triggerClass}>
+      <ListboxButton
+        aria-label={`${label}, ${current?.[1] ?? value}`}
+        className={triggerClass}
+      >
         <span className="truncate">{current?.[1] ?? value}</span>
         <ChevronDown
           size={16}

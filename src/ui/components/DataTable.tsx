@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import type { ReactNode } from 'react'
 
 import { EmptyState } from './EmptyState'
@@ -12,6 +12,7 @@ interface Props {
 
 /** A real table from md up; stacked label/value cards on phones. */
 export function DataTable({ caption, headers, rows, empty }: Props) {
+  const reduced = useReducedMotion()
   if (rows.length === 0) {
     return <EmptyState>{empty}</EmptyState>
   }
@@ -35,7 +36,7 @@ export function DataTable({ caption, headers, rows, empty }: Props) {
         <tbody className="block md:table-row-group">
           {rows.map((r, ri) => (
             <motion.tr
-              initial={{ opacity: 0, y: -6 }}
+              initial={reduced ? false : { opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.18, delay: Math.min(ri, 8) * 0.02 }}
               key={r.key}

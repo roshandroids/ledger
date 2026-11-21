@@ -22,8 +22,9 @@ export function SpendingDonut({ rows, total }: Props) {
     <div className="grid items-center gap-4 md:grid-cols-2">
       <div aria-hidden="true" className="relative h-56">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart accessibilityLayer={false}>
             <Pie
+              rootTabIndex={-1}
               data={rows}
               dataKey="value"
               nameKey="name"

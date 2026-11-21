@@ -8,7 +8,7 @@ import { useLedger } from '../../store/useLedger'
 
 /** Open a custom dropdown by its label and pick an option. */
 async function choose(label: string, option: string) {
-  await userEvent.click(screen.getByLabelText(label))
+  await userEvent.click(screen.getByLabelText(new RegExp('^' + label)))
   await userEvent.click(await screen.findByRole('option', { name: option }))
 }
 
@@ -41,10 +41,10 @@ describe('Budget', () => {
   it('shows Due month only for One-time and keeps focus on the select', async () => {
     at('/budget')
     await userEvent.click(screen.getByRole('button', { name: '+ Add item' }))
-    expect(screen.queryByLabelText('Due month')).toBeNull()
+    expect(screen.queryByLabelText(/^Due month/)).toBeNull()
     await choose('Frequency', 'One-time')
-    expect(screen.getByLabelText('Due month')).toBeInTheDocument()
-    expect(screen.getByLabelText('Frequency')).toHaveTextContent('One-time')
+    expect(screen.getByLabelText(/^Due month/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Frequency/)).toHaveTextContent('One-time')
   })
 })
 
@@ -54,9 +54,9 @@ describe('Transactions', () => {
     await userEvent.click(
       screen.getByRole('button', { name: '+ Add transaction' }),
     )
-    expect(screen.queryByLabelText('Savings goal')).toBeNull()
+    expect(screen.queryByLabelText(/^Savings goal/)).toBeNull()
     await choose('Transaction type', 'Savings transfer')
-    expect(screen.getByLabelText('Savings goal')).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Savings goal/)).toBeInTheDocument()
   })
 })
 
@@ -125,7 +125,7 @@ describe('Backup', () => {
 describe('Pickers', () => {
   it('month picker changes the report month', async () => {
     at('/overview')
-    await userEvent.click(screen.getByLabelText('Report month'))
+    await userEvent.click(screen.getByLabelText(/^Report month/))
     await userEvent.click(
       await screen.findByRole('button', { name: 'Previous year' }),
     )
@@ -138,7 +138,7 @@ describe('Pickers', () => {
     await userEvent.click(
       screen.getByRole('button', { name: '+ Add transaction' }),
     )
-    await userEvent.click(screen.getByLabelText('Date'))
+    await userEvent.click(screen.getByLabelText(/^Date/))
     await userEvent.click(
       await screen.findByRole('button', { name: /March 15th, 2026/ }),
     )

@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useLedger } from '../../store/useLedger'
 import { DownloadButton } from '../DownloadButton'
@@ -9,6 +9,7 @@ import { Topbar } from './Topbar'
 
 export function Shell() {
   const { pathname } = useLocation()
+  const reduced = useReducedMotion()
   const page = pages.find((p) => `/${p.path}` === pathname)
   const month = useLedger((s) => s.state.month)
   const canSave = useLedger((s) => s.canSave)
@@ -50,7 +51,7 @@ export function Shell() {
           )}
           <motion.div
             key={pathname}
-            initial={{ opacity: 0, y: 8 }}
+            initial={reduced ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
             className="grid gap-5"

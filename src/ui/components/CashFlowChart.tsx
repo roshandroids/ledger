@@ -28,7 +28,11 @@ export function CashFlowChart({ rows }: { rows: FlowRow[] }) {
     <div>
       <div aria-hidden="true" className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ left: 8, right: 8 }}>
+          <BarChart
+            accessibilityLayer={false}
+            data={data}
+            margin={{ left: 8, right: 8 }}
+          >
             <CartesianGrid vertical={false} stroke="var(--line)" />
             <XAxis dataKey="name" tickLine={false} />
             <YAxis
