@@ -5,6 +5,7 @@ import {
   Landmark,
   TrendingUp,
   Wallet,
+  Settings,
 } from 'lucide-react'
 
 export const pages = [
@@ -24,4 +25,5 @@ export const pages = [
   { path: 'trends', title: 'Trends', nav: 'Trends', icon: TrendingUp },
   { path: 'accounts', title: 'Accounts', nav: 'Accounts', icon: Landmark },
   { path: 'goals', title: 'Savings goals', nav: 'Savings goals', icon: Target },
+  { path: 'settings', title: 'Settings', nav: 'Settings', icon: Settings },
 ] as const

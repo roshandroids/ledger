@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react'
+import { useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useLedger } from '../../store/useLedger'
 import { DownloadButton } from '../DownloadButton'
@@ -9,6 +10,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 
 export function Shell() {
+  const [navCollapsed, setNavCollapsed] = useState(false)
   const { pathname } = useLocation()
   const reduced = useReducedMotion()
   const page = pages.find((p) => `/${p.path}` === pathname)
@@ -17,31 +19,25 @@ export function Shell() {
   const sample = useLedger((s) => s.state.sample)
   const setSetting = useLedger((s) => s.setSetting)
   const startBlank = useLedger((s) => s.startBlank)
-  const { updateReady, canInstall, install } = usePwa()
+  const { updateReady } = usePwa()
   if (!page) return <Navigate to="/overview" replace />
   return (
-    <div className="min-h-screen pb-20 md:grid md:grid-cols-[222px_minmax(0,1fr)] md:pb-0">
-      <Sidebar />
-      <main>
+    <div
+      className={`min-h-screen pb-20 md:grid md:pb-0 ${navCollapsed ? 'md:grid-cols-[72px_minmax(0,1fr)]' : 'md:grid-cols-[222px_minmax(0,1fr)]'}`}
+    >
+      <Sidebar
+        collapsed={navCollapsed}
+        onToggle={() => setNavCollapsed((value) => !value)}
+      />
+      <main className="min-w-0">
         <Topbar
           title={page.title}
           month={month}
           onMonthChange={(m) => setSetting('month', m)}
-          actions={
-            <>
-              <DownloadButton />
-              {canInstall && (
-                <button
-                  onClick={install}
-                  className="border-line rounded-lg border px-3 py-2 text-sm font-semibold"
-                >
-                  Install app
-                </button>
-              )}
-            </>
-          }
+          showReportControls={page.path !== 'settings'}
+          actions={<DownloadButton />}
         />
-        <div className="grid gap-4 p-4 md:gap-5 md:p-9">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 p-4 md:gap-5 lg:p-7 xl:p-9">
           {!canSave && (
             <Notice>
               Browser storage is unavailable. Download Excel before closing this

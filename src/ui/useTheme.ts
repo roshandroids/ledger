@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 
 export type Theme = 'system' | 'light' | 'dark'
 const KEY = 'ledger-theme'
-const order: Theme[] = ['system', 'light', 'dark']
 
 function read(): Theme {
   try {
@@ -24,13 +23,12 @@ function apply(theme: Theme) {
   }
 }
 
-/** Cycles system → light → dark. */
+/** Read and persist the chosen appearance. */
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(read)
-  const cycle = useCallback(() => {
-    const next = order[(order.indexOf(theme) + 1) % order.length]
+  const [theme, setCurrent] = useState<Theme>(read)
+  const setTheme = useCallback((next: Theme) => {
     apply(next)
-    setTheme(next)
-  }, [theme])
-  return { theme, cycle }
+    setCurrent(next)
+  }, [])
+  return { theme, setTheme }
 }

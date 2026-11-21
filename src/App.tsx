@@ -9,6 +9,7 @@ import { OverviewPage } from './ui/pages/OverviewPage'
 import { AccountsPage } from './ui/pages/AccountsPage'
 import { TrendsPage } from './ui/pages/TrendsPage'
 import { TransactionsPage } from './ui/pages/TransactionsPage'
+import { SettingsPage } from './ui/pages/SettingsPage'
 import { pages } from './ui/pages/pages'
 
 const elements = {
@@ -18,6 +19,7 @@ const elements = {
   trends: <TrendsPage />,
   accounts: <AccountsPage />,
   goals: <GoalsPage />,
+  settings: <SettingsPage />,
 }
 
 /** Old bookmarks look like `/#budget`; send them to `/budget`. */
