@@ -174,3 +174,7 @@ Backend and accounts, multi-currency, CSV or bank import, recurring-transaction 
 2. Keep Excel formulas live (current behavior, more work) or export values only?
 3. Is the `#overview` URL scheme worth keeping, or move to clean paths (`/budget`)?
 4. Add a JSON backup/restore (import/export) feature as part of this, since data is only on one device?
+
+## 9. Status
+
+Phases 0-9 done except deployment, Lighthouse/meta polish, dark-mode axe check and pushing to GitHub. Two Phase-2 decisions: floats kept (not cents), live Excel formulas kept. Added beyond plan: theming, category icons, JSON backup/restore, Google Drive saving.

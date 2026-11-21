@@ -1,6 +1,25 @@
 # Ledger
 
-Personal monthly budget planner (CAD). Migrating from the vanilla-JS app in `legacy/`; see `REFACTOR_PLAN.md`.
+Personal monthly budget planner (CAD). Local-first React app: data stays in your browser, with Excel export, JSON backup and optional Google Drive saving. No backend.
+
+Stack: Vite, React, TypeScript (strict), Tailwind, Zustand, Zod, Recharts, Motion, exceljs, Vitest, Playwright.
+
+```
+src/domain    pure budget math (report, categories, schema)
+src/storage   localStorage adapter, v1 -> v2 migration, JSON backup
+src/store     Zustand store
+src/export    Excel workbook builder
+src/drive     Google Drive upload
+src/ui        pages, layout, components
+```
+
+### Saved data and migration
+
+Data is saved under `ledger-budget-v2`. The old app's `ledger-budget-v1` blob is migrated on first load and left in place as a backup; an unreadable blob is copied to `ledger-budget-corrupt`.
+
+### Golden fixtures
+
+`src/domain/__fixtures__/golden.json` holds `report()` outputs of the original JavaScript implementation for 40 generated budgets; the domain tests assert exact parity. The generator and the original app were removed after the port; they are in git history before the `chore: remove legacy` commit.
 
 ```bash
 npm install
