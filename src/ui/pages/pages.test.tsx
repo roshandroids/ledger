@@ -358,9 +358,9 @@ describe('Transactions', () => {
     await userEvent.click(
       screen.getByRole('button', { name: '+ Add transaction' }),
     )
-    expect(screen.queryByLabelText(/^Savings goal/)).toBeNull()
+    expect(screen.queryByLabelText(/^Savings goal,/)).toBeNull()
     await choose('Transaction type', 'Savings transfer')
-    expect(screen.getByLabelText(/^Savings goal/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Savings goal,/)).toBeInTheDocument()
   })
 })
 
@@ -403,7 +403,7 @@ describe('Overview', () => {
 
 describe('Backup', () => {
   it('rejects a non-backup file and restores a valid one after confirming', async () => {
-    at('/budget')
+    at('/settings')
     const file = screen.getByLabelText('Backup file')
     await userEvent.upload(
       file,

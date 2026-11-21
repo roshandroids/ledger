@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { SCHEMA_VERSION, starter, type State } from '../../src/domain'
 
 /** Control by accessible-name prefix (dropdown/picker names end with their current value). */
 const ctl = (page: Page, label: string) =>
@@ -19,6 +20,164 @@ test('first load shows the sample banner; Start blank clears it and keeps the mo
   await expect(page.getByText('Sample budget')).toBeVisible()
   await page.getByRole('button', { name: 'Start blank' }).click()
   await expect(page.getByText('Sample budget')).toBeHidden()
+})
+
+test('Overview downloads a monthly PDF statement', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/overview')
+  const downloadStarted = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Monthly statement (.pdf)' }).click()
+  const download = await downloadStarted
+  expect(download.suggestedFilename()).toMatch(
+    /^Ledger-Statement-\d{4}-\d{2}\.pdf$/,
+  )
+  const path = testInfo.outputPath('statement.pdf')
+  await download.saveAs(path)
+  expect((await readFile(path)).subarray(0, 5).toString()).toBe('%PDF-')
+})
+
+test('navigation Settings changes appearance and opens the install prompt', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/overview')
+  await page.evaluate(() => {
+    const event = Object.assign(new Event('beforeinstallprompt'), {
+      prompt: () => {
+        document.body.dataset.installPrompted = 'true'
+        return Promise.resolve()
+      },
+    })
+    window.dispatchEvent(event)
+  })
+  await page
+    .getByRole('navigation', { name: 'Budget workspace' })
+    .getByRole('link', { name: 'Settings' })
+    .click()
+  await expect(page).toHaveURL(/\/settings$/)
+  await page.getByRole('radio', { name: 'Dark' }).check()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.getByRole('radio', { name: 'Dark' })).toBeChecked()
+  await page.getByRole('button', { name: 'Install app' }).click()
+  await expect(page.locator('body')).toHaveAttribute(
+    'data-install-prompted',
+    'true',
+  )
+})
+
+test('desktop sidebar can collapse to icons and expand again', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1200, height: 800 })
+  await page.goto('/overview')
+  const nav = page.getByRole('navigation', { name: 'Budget workspace' })
+  const overview = nav.getByRole('link', { name: 'Overview' })
+  const sidebar = page.getByRole('complementary')
+  const expandedWidth = (await sidebar.boundingBox())!.width
+  await page.getByRole('button', { name: 'Collapse sidebar' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Expand sidebar' }),
+  ).toHaveAttribute('aria-expanded', 'false')
+  expect((await sidebar.boundingBox())!.width).toBeLessThan(expandedWidth)
+  await expect(overview).toBeVisible()
+  await nav.getByRole('link', { name: 'Budget' }).click()
+  await expect(page).toHaveURL(/budget$/)
+  await page.getByRole('button', { name: 'Expand sidebar' }).click()
+  expect((await sidebar.boundingBox())!.width).toBe(expandedWidth)
+})
+
+test('moving a budget item schedules it and preserves the monthly plan', async ({
+  page,
+}) => {
+  await page.goto('/budget')
+  await page
+    .getByRole('button', { name: 'Make recurring: Rent & utilities' })
+    .click()
+  const dialog = page.getByRole('dialog', { name: 'Move to recurring bills' })
+  await dialog.getByLabel('First bill date').fill('2026-11-15')
+  await dialog.getByRole('button', { name: 'Move item' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Make recurring: Rent & utilities' }),
+  ).toHaveCount(0)
+  await expect(page.getByLabel('Bill name')).toHaveValue('Rent & utilities')
+  await expect(ctl(page, 'Bill start date')).toHaveAccessibleName(
+    /Nov 15, 2026/,
+  )
+  await expect(
+    page.getByRole('checkbox', { name: 'Include', exact: true }),
+  ).toBeChecked()
+  await page.reload()
+  await expect(page.getByLabel('Bill name')).toHaveValue('Rent & utilities')
+  await page.goto('/overview')
+  const housing = page.getByRole('row').filter({ hasText: 'Housing' })
+  await expect(housing).toContainText('$1,190.00')
+})
+
+test('Overview fits narrow screens and charts recorded income and spending', async ({
+  page,
+}) => {
+  const state: State = {
+    ...starter(),
+    month: '2026-10',
+    transactions: [
+      {
+        date: '2026-09-04',
+        type: 'Income',
+        amount: 4000,
+        category: '',
+        notes: '',
+        goal: '',
+      },
+      {
+        date: '2026-09-05',
+        type: 'Expense',
+        amount: 100,
+        category: 'Groceries',
+        notes: '',
+        goal: '',
+      },
+      {
+        date: '2026-10-04',
+        type: 'Income',
+        amount: 4500,
+        category: '',
+        notes: '',
+        goal: '',
+      },
+      {
+        date: '2026-10-05',
+        type: 'Expense',
+        amount: 125,
+        category: 'Groceries',
+        notes: '',
+        goal: '',
+      },
+    ],
+  }
+  await page.addInitScript(
+    ({ state, version }) => {
+      localStorage.setItem(
+        'ledger-budget-v2',
+        JSON.stringify({ version, state }),
+      )
+    },
+    { state, version: SCHEMA_VERSION },
+  )
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/overview')
+  const trend = page.locator('section').filter({
+    has: page.getByRole('heading', { name: 'Income and spending trend' }),
+  })
+  await expect(trend.locator('.recharts-line-curve')).toHaveCount(2)
+  await expect(trend.getByRole('table').getByText('$4,500.00')).toHaveCount(1)
+  for (const width of [360, 980, 1440]) {
+    await page.setViewportSize({ width, height: 900 })
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(width)
+  }
 })
 
 test('category suggestions are compact and searchable and keep custom names', async ({
@@ -89,14 +248,14 @@ test('goals: add, block removal when linked, then remove', async ({ page }) => {
   await page.goto('/transactions')
   await page.getByRole('button', { name: '+ Add transaction' }).click()
   await choose(page, 'Transaction type', 'Savings transfer')
-  await choose(page, 'Savings goal', 'Trip')
+  await choose(page, 'Savings goal,', 'Trip')
   await ctl(page, 'Amount').fill('10')
   await page.goto('/goals')
   await page.getByRole('button', { name: 'Remove goal' }).click()
   await expect(page.getByRole('dialog')).toContainText('linked transactions')
   await page.getByRole('button', { name: 'OK' }).click()
   await page.goto('/transactions')
-  await choose(page, 'Savings goal', 'General savings')
+  await choose(page, 'Savings goal,', 'General savings')
   await page.goto('/goals')
   await page.getByRole('button', { name: 'Remove goal' }).click()
   await expect(ctl(page, 'Goal name')).toHaveCount(0)
@@ -105,7 +264,8 @@ test('goals: add, block removal when linked, then remove', async ({ page }) => {
 test('downloads a valid xlsx', async ({ page }) => {
   await page.goto('/overview')
   const download = page.waitForEvent('download')
-  await page.getByRole('button', { name: /Download Excel/ }).click()
+  await page.getByRole('button', { name: 'Download', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Excel workbook (.xlsx)' }).click()
   const file = await download
   expect(file.suggestedFilename()).toMatch(/^Ledger-\d{4}-\d{2}\.xlsx$/)
   const bytes = await readFile(await file.path())
@@ -411,7 +571,7 @@ test('a USD account needs a rate and converts into net worth', async ({
 test('app lock hides the app after reload until the passcode is entered', async ({
   page,
 }) => {
-  await page.goto('/budget')
+  await page.goto('/settings')
   await page.getByRole('button', { name: 'Start blank' }).click()
   await page.getByLabel('New passcode').fill('1234')
   await page.getByLabel('Repeat passcode').fill('1234')
@@ -422,7 +582,7 @@ test('app lock hides the app after reload until the passcode is entered', async 
     page.getByRole('heading', { name: 'Ledger is locked' }),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Budget' }),
+    page.getByRole('heading', { level: 1, name: 'Settings' }),
   ).toHaveCount(0)
   await page.getByLabel('Passcode').fill('9999')
   await page.getByRole('button', { name: 'Unlock' }).click()
@@ -430,7 +590,7 @@ test('app lock hides the app after reload until the passcode is entered', async 
   await page.getByLabel('Passcode').fill('1234')
   await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Budget' }),
+    page.getByRole('heading', { level: 1, name: 'Settings' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Lock now' }).click()
   await expect(

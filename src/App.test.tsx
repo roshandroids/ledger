@@ -42,7 +42,7 @@ it('every nav link and the month picker are keyboard reachable', async () => {
   at('/overview')
   await userEvent.tab()
   const seen = new Set<string>()
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     seen.add(
       document.activeElement?.getAttribute('aria-label') ??
         document.activeElement?.textContent ??
@@ -51,7 +51,8 @@ it('every nav link and the month picker are keyboard reachable', async () => {
     await userEvent.tab()
   }
   expect([...seen].some((t) => t.startsWith('Report month'))).toBe(true)
-  expect([...seen].some((t) => t.includes('Savings goals'))).toBe(true)
+  expect(seen).toContain('Savings goals')
+  expect(seen).toContain('Settings')
 })
 
 it('MoneyInput reports valid values', async () => {

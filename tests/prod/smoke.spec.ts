@@ -76,7 +76,8 @@ test('core workflow: blank, add, edit, filter, month, persist, download', async 
 
   // Excel download.
   const download = page.waitForEvent('download')
-  await page.getByRole('button', { name: /Download Excel/ }).click()
+  await page.getByRole('button', { name: 'Download', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Excel workbook (.xlsx)' }).click()
   const file = await download
   expect(file.suggestedFilename()).toMatch(/^Ledger-\d{4}-\d{2}\.xlsx$/)
   expect((await readFile(await file.path())).subarray(0, 2).toString()).toBe(
