@@ -172,6 +172,14 @@ describe('workbook', () => {
       9,
     )
     expect(back.getWorksheet('Settings')!.getCell('B3').numFmt).toContain('$')
+    const transactions = back.getWorksheet('Transactions')!
+    expect(transactions.autoFilter).toBe('A1:J7')
+    expect(transactions.getColumn('G').hidden).toBe(true)
+    expect(transactions.getColumn('F').hidden).toBe(false)
+    expect(transactions.getCell('F2').alignment.wrapText).toBe(true)
+    const overview = back.getWorksheet('Overview')!
+    expect(overview.getCell('A13').font.bold).toBe(true)
+    expect(overview.getCell('B9').font.bold).toBe(true)
   })
 })
 

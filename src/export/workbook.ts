@@ -135,16 +135,48 @@ interface Sheet {
   name: string
   widths: number[]
   data: Item[][]
+  detailColumns?: number
+  sectionHeader?: number
+  emphasisRows?: number[]
+  wrapColumn?: number
+}
+
+function fill(argb: string): ExcelJS.Fill {
+  return { type: 'pattern', pattern: 'solid', fgColor: { argb } }
 }
 
 function addSheet(wb: ExcelJS.Workbook, sheet: Sheet) {
   const ws = wb.addWorksheet(sheet.name, {
+    properties: {
+      tabColor: { argb: sheet.detailColumns ? 'FF28745F' : 'FF121D32' },
+    },
     views: [{ showGridLines: false, state: 'frozen', ySplit: 1 }],
   })
-  ws.columns = sheet.widths.map((width) => ({ width }))
+  ws.columns = sheet.widths.map((width, index) => ({
+    width,
+    hidden: sheet.detailColumns !== undefined && index >= sheet.detailColumns,
+  }))
+  if (sheet.detailColumns && sheet.data.length > 1) {
+    ws.autoFilter = {
+      from: { row: 1, column: 1 },
+      // Include hidden helper cells so a filter sort moves the whole row.
+      to: { row: sheet.data.length, column: sheet.widths.length },
+    }
+  }
+
   sheet.data.forEach((row, r) => {
-    row.forEach((item, c) => {
-      const cell = ws.getCell(r + 1, c + 1)
+    const rowNumber = r + 1
+    if (!row.length) {
+      ws.getRow(rowNumber).height = 10
+      return
+    }
+    const header = rowNumber === 1 || rowNumber === sheet.sectionHeader
+    const emphasis = sheet.emphasisRows?.includes(rowNumber)
+    if (header || emphasis) ws.getRow(rowNumber).height = header ? 28 : 22
+
+    sheet.widths.forEach((_, c) => {
+      const item = row[c] ?? null
+      const cell = ws.getCell(rowNumber, c + 1)
       const spec: Cell =
         typeof item === 'object' && item !== null ? item : plain(item)
       if (spec.formula) {
@@ -156,14 +188,20 @@ function addSheet(wb: ExcelJS.Workbook, sheet: Sheet) {
         cell.value = spec.value
       }
       if (spec.format) cell.numFmt = spec.format
-      if (r === 0 && typeof item === 'string') {
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF203657' },
-        }
+
+      cell.font = {
+        name: 'Calibri',
+        size: 11,
+        bold: header || emphasis || (!sheet.detailColumns && c === 0),
+        color: { argb: header ? 'FFFFFFFF' : 'FF172337' },
       }
+      cell.alignment = {
+        vertical: 'middle',
+        wrapText: header || c + 1 === sheet.wrapColumn,
+      }
+      if (header) cell.fill = fill(rowNumber === 1 ? 'FF121D32' : 'FF285447')
+      else if (emphasis) cell.fill = fill('FFE0F4EC')
+      else if (r % 2 === 1) cell.fill = fill('FFF1F5F9')
     })
   })
 }
@@ -462,31 +500,46 @@ export function buildWorkbook(input: State): ExcelJS.Workbook {
 
   const wb = new ExcelJS.Workbook()
   wb.calcProperties.fullCalcOnLoad = true
-  addSheet(wb, { name: 'Overview', widths: [38, 22, 22, 20], data: overview })
+  addSheet(wb, {
+    name: 'Overview',
+    widths: [42, 22, 22, 22],
+    data: overview,
+    sectionHeader: rows.Overview.length + 2,
+    emphasisRows: ['cash', 'after', 'left'].map(
+      (key) => rows.Overview.findIndex((row) => row === key) + 1,
+    ),
+  })
   addSheet(wb, { name: 'Settings', widths: [55, 39], data: settings })
   addSheet(wb, {
     name: 'Budget',
+    detailColumns: 7,
     widths: [30, 23, 21, 20, 17, 17, 17, 19],
     data: budget,
   })
   addSheet(wb, {
     name: 'Transactions',
+    detailColumns: 6,
+    wrapColumn: 6,
     widths: [16, 23, 22, 18, 23, 38, 38, 24, 21, 27],
     data: transactions,
   })
   addSheet(wb, {
     name: 'Goals',
+    detailColumns: 6,
     widths: [28, 17, 17, 17, 17, 16, 39],
     data: goals,
   })
   if (state.accounts.length) {
     addSheet(wb, {
       name: 'Accounts',
+      detailColumns: 7,
       widths: [28, 16, 10, 17, 26, 12, 18],
       data: accounts,
     })
     addSheet(wb, {
       name: 'Transfers',
+      detailColumns: 5,
+      wrapColumn: 5,
       widths: [16, 24, 24, 17, 38],
       data: transfers,
     })
@@ -494,6 +547,7 @@ export function buildWorkbook(input: State): ExcelJS.Workbook {
   if (state.recurring.length)
     addSheet(wb, {
       name: 'Recurring',
+      detailColumns: 7,
       widths: [28, 20, 22, 16, 17, 16, 24],
       data: recurring,
     })
