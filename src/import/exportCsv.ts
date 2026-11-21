@@ -2,9 +2,11 @@ import { useLedger } from '../store/useLedger'
 import { toCsv } from './csv'
 
 export function exportTransactionsCsv() {
-  const { transactions } = useLedger.getState().state
+  const { transactions, accounts } = useLedger.getState().state
+  const accountName = (id?: string) =>
+    accounts.find((a) => a.id === id)?.name ?? ''
   const csv = toCsv(
-    ['Date', 'Type', 'Category', 'Amount', 'Goal', 'Notes'],
+    ['Date', 'Type', 'Category', 'Amount', 'Goal', 'Notes', 'Account'],
     transactions.map((t) => [
       t.date,
       t.type,
@@ -12,8 +14,9 @@ export function exportTransactionsCsv() {
       t.amount,
       t.goal,
       t.notes,
+      accountName(t.account),
     ]),
-    [1, 2, 4, 5],
+    [1, 2, 4, 5, 6],
   )
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
   const a = document.createElement('a')

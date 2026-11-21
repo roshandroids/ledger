@@ -15,7 +15,7 @@ export function Sidebar() {
       </NavLink>
       <nav
         aria-label="Budget workspace"
-        className="grid grid-cols-5 pb-[env(safe-area-inset-bottom)] md:mt-12 md:grid-cols-1 md:gap-2 md:pb-0"
+        className="grid grid-cols-6 pb-[env(safe-area-inset-bottom)] md:mt-12 md:grid-cols-1 md:gap-2 md:pb-0"
       >
         {pages.map((p) => (
           <NavLink

@@ -132,6 +132,7 @@ for (const scheme of ['light', 'dark'] as const)
     'budget',
     'transactions',
     'trends',
+    'accounts',
     'goals',
   ]) {
     test(`axe (${scheme}): no serious violations on /${path}`, async ({
@@ -157,6 +158,27 @@ for (const scheme of ['light', 'dark'] as const)
               month: '2026-03',
               pay: 2200,
               rollover: true,
+              accounts: [
+                { id: 'a', name: 'Main', kind: 'Chequing', opening: 1000 },
+                {
+                  id: 'c',
+                  name: 'Visa',
+                  kind: 'Credit card',
+                  opening: 600,
+                  rate: 19.99,
+                  payment: 100,
+                },
+              ],
+              transfers: [
+                {
+                  id: 't',
+                  date: '2026-02-10',
+                  from: 'a',
+                  to: 'c',
+                  amount: 100,
+                  notes: '',
+                },
+              ],
               recurring: [
                 {
                   id: 'r1',

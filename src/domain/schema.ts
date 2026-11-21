@@ -3,7 +3,7 @@ import { frequencies, transactionTypes } from './constants'
 import { starter } from './starter'
 import type { State } from './types'
 
-export const SCHEMA_VERSION = 4
+export const SCHEMA_VERSION = 5
 
 const money = z.union([z.string(), z.number()])
 const cadence = z.enum(Object.keys(frequencies) as [string, ...string[]])
@@ -26,6 +26,27 @@ const transaction = z.object({
   goal: text,
   notes: text,
   ruleId: z.string().optional().catch(undefined),
+  account: z.string().optional().catch(undefined),
+})
+
+const account = z.object({
+  id: z.string().min(1),
+  name: text,
+  kind: z
+    .enum(['Chequing', 'Savings', 'Investment', 'Credit card', 'Loan'])
+    .catch('Chequing'),
+  opening: money.catch(''),
+  rate: money.catch(''),
+  payment: money.catch(''),
+})
+
+const transfer = z.object({
+  id: z.string().min(1),
+  date: text,
+  from: text,
+  to: text,
+  amount: money.catch(''),
+  notes: text,
 })
 
 const recurring = z.object({
@@ -69,6 +90,8 @@ const stateSchema = z.object({
   budget: z.array(budgetItem).catch([]),
   transactions: z.array(transaction).catch([]),
   recurring: z.array(recurring).catch([]),
+  accounts: z.array(account).catch([]),
+  transfers: z.array(transfer).catch([]),
   goals: z.array(goal).catch([]),
 })
 

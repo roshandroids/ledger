@@ -39,6 +39,33 @@ export interface Transaction {
   notes: string
   /** Set when generated from a recurring rule; makes generation idempotent. */
   ruleId?: string
+  /** Account id; empty or unknown means the first account. */
+  account?: string
+}
+
+export type AccountKind =
+  'Chequing' | 'Savings' | 'Investment' | 'Credit card' | 'Loan'
+
+export interface Account {
+  id: string
+  name: string
+  kind: AccountKind
+  /** Balance before any recorded transaction; the amount owed for Credit card and Loan. */
+  opening: MoneyInput
+  /** Annual interest rate in percent; debts only. */
+  rate: MoneyInput
+  /** Planned monthly payment; debts only. */
+  payment: MoneyInput
+}
+
+/** Money moved between two accounts. Never counts as income or spending. */
+export interface Transfer {
+  id: string
+  date: string
+  from: string
+  to: string
+  amount: MoneyInput
+  notes: string
 }
 
 export interface Recurring {
@@ -74,6 +101,8 @@ export interface State {
   budget: BudgetItem[]
   transactions: Transaction[]
   recurring: Recurring[]
+  accounts: Account[]
+  transfers: Transfer[]
   goals: Goal[]
 }
 

@@ -210,6 +210,7 @@ Status: done. Fixtures cover three layouts (headerless debit/credit with US date
 - Done when fixtures from three real bank layouts import correctly and re-importing the same file adds nothing.
 
 ### 10.6 Accounts and net worth (3-4 days)
+Status: done (committed, not pushed). Schema v5: `accounts[]`, `transfers[]`, optional `account` on transactions; older blobs load unchanged. Rules: Income adds to an account, Expense and Fund expense take from it, goal earmark moves (Savings transfer/withdrawal) leave balances alone, and Transfers move money between accounts and never touch spending totals. Rows with no account use the first account (no data rewrite). Debts store the amount owed; payoff uses fixed payments with monthly interest at rate/12, rounded to cents. Floats kept; balances are rounded to cents at output. Not in the Excel export or the transaction filters yet.
 - Accounts: chequing, savings, credit card, loan, investment, with opening balance. Transactions gain an optional `account`; transfers between accounts are paired rows that don't count as spending.
 - Net worth card and chart over time; debt payoff view (balance, rate, payment, projected payoff date).
 - Schema v3/v4 migration assigns existing rows to a default account.

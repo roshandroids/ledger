@@ -4,6 +4,7 @@ import { Shell } from './ui/layout/Shell'
 import { BudgetPage } from './ui/pages/BudgetPage'
 import { GoalsPage } from './ui/pages/GoalsPage'
 import { OverviewPage } from './ui/pages/OverviewPage'
+import { AccountsPage } from './ui/pages/AccountsPage'
 import { TrendsPage } from './ui/pages/TrendsPage'
 import { TransactionsPage } from './ui/pages/TransactionsPage'
 import { pages } from './ui/pages/pages'
@@ -13,6 +14,7 @@ const elements = {
   budget: <BudgetPage />,
   transactions: <TransactionsPage />,
   trends: <TrendsPage />,
+  accounts: <AccountsPage />,
   goals: <GoalsPage />,
 }
 

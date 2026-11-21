@@ -4,7 +4,9 @@ import {
   starter,
   transactionFor,
   type BudgetItem,
+  type Account,
   type Goal,
+  type Transfer,
   type Recurring,
   type State,
   type Transaction,
@@ -12,12 +14,15 @@ import {
 import { createLocalStorage } from '../storage/localStorage'
 import type { Storage } from '../storage/Storage'
 
-export type Group = 'budget' | 'transactions' | 'goals' | 'recurring'
+export type Group =
+  'budget' | 'transactions' | 'goals' | 'recurring' | 'accounts' | 'transfers'
 type Row = {
   budget: BudgetItem
   transactions: Transaction
   goals: Goal
   recurring: Recurring
+  accounts: Account
+  transfers: Transfer
 }
 type SettingKey = 'pay' | 'cadence' | 'target' | 'gym' | 'month' | 'rollover'
 
@@ -31,7 +36,7 @@ export interface LedgerStore {
     index: number,
     patch: Partial<Row[G]>,
   ): void
-  /** Returns false (and changes nothing) when a goal still has linked transactions. */
+  /** Returns false (and changes nothing) when a goal or account is still referenced. */
   removeRow(group: Group, index: number): boolean
   /** Delete several transactions at once (indexes into state.transactions). */
   removeTransactions(indexes: number[]): void
@@ -72,6 +77,22 @@ const newRow = (group: Group, month: string): Row[Group] =>
         notes: '',
       },
       goals: { id: crypto.randomUUID(), name: '', target: '', opening: '' },
+      accounts: {
+        id: crypto.randomUUID(),
+        name: '',
+        kind: 'Chequing',
+        opening: '',
+        rate: '',
+        payment: '',
+      },
+      transfers: {
+        id: crypto.randomUUID(),
+        date: month + '-01',
+        from: '',
+        to: '',
+        amount: '',
+        notes: '',
+      },
       recurring: {
         id: crypto.randomUUID(),
         name: '',
@@ -121,6 +142,14 @@ export function createLedgerStore(storage: Storage = createLocalStorage()) {
         if (group === 'goals') {
           const id = s.goals[index]?.id
           if (id === 'general' || s.transactions.some((t) => t.goal === id))
+            return false
+        }
+        if (group === 'accounts') {
+          const id = s.accounts[index]?.id
+          if (
+            s.transactions.some((t) => t.account === id) ||
+            s.transfers.some((x) => x.from === id || x.to === id)
+          )
             return false
         }
         commit({ ...s, [group]: s[group].filter((_, i) => i !== index) })

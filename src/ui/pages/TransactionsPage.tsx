@@ -70,6 +70,13 @@ export function TransactionsPage() {
     },
   )
   const { tableRef, addRef, onAdd, onRemove } = rowFocus
+  const accountChoices: [string, string][] = [
+    ['', 'Default account'],
+    ...state.accounts.map((a): [string, string] => [
+      a.id,
+      a.name || 'Unnamed account',
+    ]),
+  ]
   const goals: [string, string][] = [
     ['', 'Choose a goal'],
     ...state.goals.map((g): [string, string] => [
@@ -206,6 +213,7 @@ export function TransactionsPage() {
               'Type',
               'Category',
               'Amount',
+              ...(state.accounts.length ? ['Account'] : []),
               'Savings goal',
               'Notes',
               '',
@@ -257,6 +265,18 @@ export function TransactionsPage() {
                     updateRow('transactions', i, { amount })
                   }
                 />,
+                ...(state.accounts.length
+                  ? [
+                      <Select
+                        label="Account"
+                        value={t.account ?? ''}
+                        options={accountChoices}
+                        onChange={(account) =>
+                          updateRow('transactions', i, { account })
+                        }
+                      />,
+                    ]
+                  : []),
                 goalTypes.includes(t.type) ? (
                   <Select
                     label="Savings goal"

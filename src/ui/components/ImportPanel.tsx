@@ -31,6 +31,8 @@ export function ImportPanel() {
     rulesToText(loadSettings().rules),
   )
   const [msg, setMsg] = useState('')
+  const [account, setAccount] = useState('')
+  const accounts = useLedger((s) => s.state.accounts)
   const transactions = useLedger((s) => s.state.transactions)
 
   const candidates = useMemo(
@@ -95,7 +97,11 @@ export function ImportPanel() {
     if (!mapping) return
     const rules = textToRules(rulesText)
     saveSettings({ rules, mapping, signature })
-    useLedger.getState().addTransactions(ready.map((c) => c.tx))
+    useLedger
+      .getState()
+      .addTransactions(
+        ready.map((c) => (account ? { ...c.tx, account } : c.tx)),
+      )
     setMsg(
       `Imported ${ready.length} transaction${ready.length === 1 ? '' : 's'}` +
         (dupes ? `, skipped ${dupes} already in your ledger` : '') +
@@ -187,6 +193,23 @@ export function ImportPanel() {
               />
             </label>
           </div>
+          {accounts.length > 0 && (
+            <label className="grid max-w-xs gap-1 text-sm">
+              Import into account
+              <Select
+                label="Import into account"
+                value={account}
+                options={[
+                  ['', 'Default account'],
+                  ...accounts.map((a): [string, string] => [
+                    a.id,
+                    a.name || 'Unnamed account',
+                  ]),
+                ]}
+                onChange={setAccount}
+              />
+            </label>
+          )}
           <p role="status" className="text-sm">
             {ready.length} ready · {dupes} already in your ledger · {errors}{' '}
             with errors

@@ -111,6 +111,76 @@ describe('Trends and rollover', () => {
   })
 })
 
+describe('Accounts', () => {
+  const account = (
+    id: string,
+    name: string,
+    kind: string,
+    opening: number,
+  ) => ({
+    id,
+    name,
+    kind: kind as 'Chequing',
+    opening,
+    rate: 12,
+    payment: 200,
+  })
+  const seed = () =>
+    useLedger.setState({
+      state: {
+        ...starter(false),
+        month: '2026-03',
+        accounts: [
+          account('a', 'Main', 'Chequing', 1000),
+          account('c', 'Visa', 'Credit card', 1200),
+        ],
+        transfers: [
+          {
+            id: 't',
+            date: '2026-03-02',
+            from: 'a',
+            to: 'c',
+            amount: 200,
+            notes: '',
+          },
+        ],
+      },
+      canSave: true,
+    })
+
+  it('shows net worth, owed balance and a payoff projection', () => {
+    seed()
+    at('/accounts')
+    // 1000 - 200 = 800 assets; card owed 1200 - 200 = 1000; net -200.
+    expect(
+      screen.getAllByText('Net worth')[0].nextElementSibling,
+    ).toHaveTextContent('-$200.00')
+    expect(screen.getByText('$1,000.00 owed')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Debt payoff' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/months\)/)).toBeInTheDocument()
+  })
+
+  it('blocks removing an account that still has transfers', async () => {
+    seed()
+    at('/accounts')
+    await userEvent.click(
+      screen.getAllByRole('button', { name: 'Remove account' })[0],
+    )
+    expect(
+      await screen.findByText(/Reassign or remove them first/),
+    ).toBeInTheDocument()
+    expect(useLedger.getState().state.accounts).toHaveLength(2)
+  })
+
+  it('adds an account and focuses its name', async () => {
+    at('/accounts')
+    await userEvent.click(screen.getByRole('button', { name: '+ Add account' }))
+    expect(screen.getByLabelText('Account name')).toHaveFocus()
+  })
+})
+
 describe('CSV import', () => {
   const csv =
     'Date,Description,Amount\n2026-03-05,Tim Hortons,-4.50\n2026-03-06,Pay,2000\nbad,X,1\n'
