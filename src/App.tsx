@@ -1,5 +1,7 @@
 import { MotionConfig } from 'motion/react'
 import { Navigate, Route, Routes } from 'react-router'
+import { LockScreen } from './lock/LockScreen'
+import { useLock } from './lock/useLock'
 import { Shell } from './ui/layout/Shell'
 import { BudgetPage } from './ui/pages/BudgetPage'
 import { GoalsPage } from './ui/pages/GoalsPage'
@@ -25,6 +27,8 @@ const legacy = () => {
 }
 
 export default function App() {
+  const locked = useLock((s) => s.locked)
+  if (locked) return <LockScreen />
   return (
     <MotionConfig reducedMotion="user">
       <Routes>

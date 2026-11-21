@@ -381,3 +381,37 @@ test('a USD account needs a rate and converts into net worth', async ({
       .locator('xpath=following-sibling::strong'),
   ).toHaveText('$1,300.00')
 })
+
+test('app lock hides the app after reload until the passcode is entered', async ({
+  page,
+}) => {
+  await page.goto('/budget')
+  await page.getByRole('button', { name: 'Start blank' }).click()
+  await page.getByLabel('New passcode').fill('1234')
+  await page.getByLabel('Repeat passcode').fill('1234')
+  await page.getByRole('button', { name: 'Turn on lock' }).click()
+  await expect(page.getByText('Lock is on.')).toBeVisible()
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { name: 'Ledger is locked' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Budget' }),
+  ).toHaveCount(0)
+  await page.getByLabel('Passcode').fill('9999')
+  await page.getByRole('button', { name: 'Unlock' }).click()
+  await expect(page.getByRole('alert')).toHaveText('Wrong passcode.')
+  await page.getByLabel('Passcode').fill('1234')
+  await page.getByRole('button', { name: 'Unlock' }).click()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Budget' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Lock now' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Ledger is locked' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Forgot passcode?' }).click()
+  await page.getByRole('button', { name: 'Erase everything' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(page.getByLabel('New passcode')).toBeVisible() // lock is off again
+})
