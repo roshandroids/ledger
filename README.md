@@ -22,7 +22,18 @@ Your ledger is saved in the current browser profile. It works offline after an i
 
 Open **Transactions → Quick expense → Use microphone** and say an English command such as “Log 20 bucks for gas.” You can also type the same command and select **Preview expense**. Check the amount, date, category, and account, then select **Save expense**. Ledger suggests Transportation for gas when it cannot match an existing fuel budget item.
 
-Microphone recognition depends on the browser and may use its online speech service. The typed command works without microphone access.
+Voice entry requires an internet connection and microphone access. Select **Stop recording** after speaking, or wait for the eight-second recording limit. The first transcription downloads the Whisper speech model. Ledger transcribes the recording on your device. Typed commands work offline.
+
+## Log an expense with Siri
+
+On iPhone, create a shortcut named **Log Ledger Expense** in Apple Shortcuts. Add these actions in order:
+
+1. **Dictate Text** to capture a command such as “40 dollars in Walmart groceries.”
+2. **URL Encode** the dictated text.
+3. Add a **URL** action containing `https://ledger.rsprojects.dev/transactions#expense=` followed by the encoded text variable.
+4. **Open URLs** using the URL from the previous action.
+
+Say “Hey Siri, log Ledger expense.” Ledger opens a draft you can review and save. Open the shortcut in the same browser profile you use for Ledger to save to that ledger.
 
 ## Import a bank CSV
 

@@ -1,7 +1,7 @@
 import { Mic } from 'lucide-react'
 import { useTranslation } from '../i18n'
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useLocation, useSearchParams } from 'react-router'
 import { accountOf, goalTypes, transactionTypes } from '../../domain'
 import type { TransactionType } from '../../domain'
 import { useLedger } from '../../store/useLedger'
@@ -43,6 +43,11 @@ export function TransactionsPage() {
   const t = useTranslation()
   const state = useLedger((s) => s.state)
   const { addRow, addTransactions, updateRow, removeRow } = useLedger.getState()
+  const { hash } = useLocation()
+  const linkedCommand = new URLSearchParams(hash.slice(1))
+    .get('expense')
+    ?.trim()
+    .slice(0, 240)
   const [params, setParams] = useSearchParams()
   const filter = useMemo(() => parseFilter(params), [params])
   const setFilter = (patch: Partial<TxFilter>) =>
@@ -104,14 +109,19 @@ export function TransactionsPage() {
   ]
   return (
     <>
-      {quickExpense && (
+      {(quickExpense || linkedCommand) && (
         <QuickExpense
+          key={linkedCommand ?? 'manual'}
+          initialCommand={linkedCommand}
           state={state}
           categories={categorySuggestions}
           accounts={accountChoices}
-          onClose={() => setQuickExpense(false)}
+          onClose={() => {
+            setQuickExpense(false)
+            if (linkedCommand) setParams(params, { replace: true })
+          }}
           onSave={(expense) => {
-            setParams({}, { replace: true })
+            if (!linkedCommand) setParams({}, { replace: true })
             setSelected([])
             addTransactions([expense])
           }}

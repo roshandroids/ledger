@@ -16,9 +16,10 @@ function underHundred(words: string): number | undefined {
 
 /** Parse a simple English expense command. Leave the ledger untouched. */
 export function parseExpenseCommand(command: string) {
-  const match = /^(?:log |add |spent |paid )?\$?(.+?)\s+for\s+(.+)$/i.exec(
-    command.trim().replace(/\s+/g, ' '),
-  )
+  const match =
+    /^(?:(?:log|add|(?:i )?(?:spent|paid)) )?\$?(.+?) (?:for|on|at|in) (.+)$/i.exec(
+      command.trim().replace(/\s+/g, ' '),
+    )
   if (!match) return null
   const input = match[1].toLowerCase().replace(/ (?:bucks?|dollars?)$/, '')
   const words = input.replaceAll('-', ' ')

@@ -154,26 +154,63 @@ test('Start fresh confirms before clearing Ledger data and offline cache', async
   expect(data.preference).toBe('keep')
 })
 
+test('a Siri expense link opens a draft and saves only after confirmation', async ({
+  page,
+}) => {
+  const link = '/transactions#expense=%2440%20in%20Walmart%20groceries.'
+  await page.goto(link)
+  const dialog = page.getByRole('dialog', { name: 'Quick expense' })
+  await expect(dialog.getByLabel('Expense amount')).toHaveValue('40')
+  const table = page.getByRole('table', { name: 'Transactions' })
+  await expect(table).toHaveCount(0)
+  await dialog.getByRole('button', { name: 'Cancel' }).click()
+  await expect(page).toHaveURL(/\/transactions$/)
+  await expect(dialog).toHaveCount(0)
+  await expect(table).toHaveCount(0)
+
+  await page.goto(link)
+  await dialog.getByRole('button', { name: 'Save expense' }).click()
+  await expect(page).toHaveURL(/\/transactions$/)
+  await expect(table.getByLabel('Notes')).toHaveValue('Walmart groceries')
+})
+
 test('quick expense previews speech before saving and accepts typed commands', async ({
   page,
 }) => {
   await page.addInitScript(() => {
-    Object.defineProperty(window, 'SpeechRecognition', {
-      configurable: true,
-      value: class {
-        onresult?: (event: { results: { transcript: string }[][] }) => void
-        onend?: () => void
-        start() {
-          setTimeout(() => {
-            this.onresult?.({
-              results: [[{ transcript: 'log twenty bucks for gas' }]],
-            })
-            this.onend?.()
-          }, 0)
-        }
-        abort() {}
-      },
-    })
+    window.Worker = class {
+      onmessage?: (event: MessageEvent<{ transcript: string }>) => void
+
+      postMessage() {
+        queueMicrotask(() =>
+          this.onmessage?.(
+            new MessageEvent('message', {
+              data: { transcript: 'log twenty bucks for gas' },
+            }),
+          ),
+        )
+      }
+
+      terminate() {}
+    } as unknown as typeof Worker
+    navigator.mediaDevices.getUserMedia = async () => new MediaStream()
+    AudioContext.prototype.decodeAudioData = async () =>
+      new AudioBuffer({ length: 1600, sampleRate: 16000 })
+    window.MediaRecorder = class extends EventTarget {
+      state = 'inactive'
+      mimeType = 'audio/webm'
+      onstop?: () => void
+
+      start() {
+        this.state = 'recording'
+      }
+
+      stop() {
+        this.state = 'inactive'
+        this.dispatchEvent(new Event('stop'))
+        this.onstop?.()
+      }
+    } as unknown as typeof MediaRecorder
   })
   await page.goto('/transactions')
   await page.getByRole('button', { name: 'Quick expense' }).click()
@@ -181,6 +218,7 @@ test('quick expense previews speech before saving and accepts typed commands', a
   const save = dialog.getByRole('button', { name: 'Save expense' })
   await expect(save).toBeDisabled()
   await dialog.getByRole('button', { name: 'Use microphone' }).click()
+  await dialog.getByRole('button', { name: 'Stop recording' }).click()
   await expect(dialog.getByLabel('Expense amount')).toHaveValue('20')
   await expect(
     dialog.getByLabel('Expense category', { exact: true }),

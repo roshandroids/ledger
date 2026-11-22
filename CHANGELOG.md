@@ -2,6 +2,12 @@
 
 Each production release has a version and a dated entry below. Newest releases appear first.
 
+## [0.3.0] - 2026-11-22
+
+- Open a draft from a Siri Shortcut and review it in Quick Expense before saving.
+- Transcribe voice commands on your device with Whisper after downloading the speech model. Voice entry requires an internet connection.
+- Accept more spoken and typed patterns, including “I spent $40 on groceries” and “$40 in Walmart groceries.”
+
 ## [0.2.0] - 2026-11-21
 
 - Log an expense from an English voice or typed command, then review and edit it before saving.
